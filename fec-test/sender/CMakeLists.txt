@@ -12,7 +12,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 
 include_directories(
-        ${CMAKE_BOOST_DIR}/include
+        ${CMAKE_SOURCE_DIR}/../../asio/asio/include
         ${CMAKE_SOURCE_DIR}/Transport
         ${CMAKE_SOURCE_DIR}/Transport/boost-asio
         ${CMAKE_SOURCE_DIR}/Transport/FEC

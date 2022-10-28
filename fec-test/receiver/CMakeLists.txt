@@ -12,8 +12,12 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
+add_definitions(-DASIO_STANDALONE)
+IF(WIN32)
+        add_definitions(-DNEED_BCOPY -DMSDOS)
+ENDIF()
 include_directories(
-        ${CMAKE_BOOST_DIR}/include
+        ${CMAKE_SOURCE_DIR}/../../asio/asio/include
         ${CMAKE_SOURCE_DIR}/Transport
         ${CMAKE_SOURCE_DIR}/Transport/boost-asio
 )

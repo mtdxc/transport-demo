@@ -1,5 +1,0 @@
-/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEPENDS_USE_COMPILER=FALSE -G "CodeBlocks - Unix Makefiles" /Users/admin/go/src/github.com/transport-demo/fec-test/sender
--- Debug
--- Configuring done
--- Generating done
--- Build files have been written to: /Users/admin/go/src/github.com/transport-demo/fec-test/sender/cmake-build-debug
