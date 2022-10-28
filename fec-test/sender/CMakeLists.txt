@@ -10,7 +10,10 @@ message(STATUS ${CMAKE_BUILD_TYPE})
 set(CMAKE_CXX_FLAGS_DEBUG "-O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
-
+add_definitions(-DASIO_STANDALONE)
+IF(WIN32)
+        add_definitions(-DNEED_BCOPY -DMSDOS)
+ENDIF()
 include_directories(
         ${CMAKE_SOURCE_DIR}/../../asio/asio/include
         ${CMAKE_SOURCE_DIR}/Transport

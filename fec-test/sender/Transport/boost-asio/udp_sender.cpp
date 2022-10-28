@@ -47,10 +47,10 @@ namespace transportdemo {
   , timer_ms_(timer_ms)
   , seq_(1)
   , fec_count_(0)
-  , timer_(ios_, PosixTime::milliseconds(static_cast<int64_t>(timer_ms_))){
+  , timer_(ios_, std::chrono::milliseconds(static_cast<int64_t>(timer_ms_))){
     socket_ = std::make_shared<UDPSocket>(ios_);
-    boost::asio::ip::address send_addr = boost::asio::ip::address::from_string("192.168.26.23");
-//    boost::asio::ip::address send_addr = boost::asio::ip::address::from_string("127.0.0.1");
+    asio::ip::address send_addr = asio::ip::address::from_string("192.168.26.23");
+//    asio::ip::address send_addr = asio::ip::address::from_string("127.0.0.1");
     UDPEndpoint send_endpoint(send_addr,8001);
     send_ep_ = send_endpoint;
 
@@ -92,13 +92,13 @@ namespace transportdemo {
   }
 
   void UDPSender::send_packet(TESTTPPacketPtr pkt, const UDPEndpoint &ep) {
-    socket_->send_to(boost::asio::buffer(pkt->mutable_buffer(), pkt->length()), ep);
+    socket_->send_to(asio::buffer(pkt->mutable_buffer(), pkt->length()), ep);
   }
 
 
   void UDPSender::do_receive_from() {
     TESTTPPacketPtr pkt = std::make_shared<TESTTPPacket>();
-    socket_->async_receive_from(boost::asio::buffer(pkt->mutable_buffer(), pkt->capacity()),
+    socket_->async_receive_from(asio::buffer(pkt->mutable_buffer(), pkt->capacity()),
                                         pkt->mutable_endpoint(),
                                         std::bind(&UDPSender::handle_receive_from,
                                                   this,
@@ -137,7 +137,7 @@ namespace transportdemo {
   void UDPSender::do_timer(bool first) {
     if (!first) {
       timer_.expires_at(timer_.expires_at() +
-      PosixTime::milliseconds(static_cast<int64_t>(timer_ms_)));
+      std::chrono::milliseconds(static_cast<int64_t>(timer_ms_)));
     }
     timer_.async_wait(std::bind(&UDPSender::handle_crude_timer, this, std::placeholders::_1));
   }

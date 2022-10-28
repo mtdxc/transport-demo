@@ -39,11 +39,9 @@ private:
                                        size_t size);
 
   uint64_t GetCurrentStamp64() {
-    boost::posix_time::ptime epoch(boost::gregorian::date(1970, boost::gregorian::Jan, 1));
-    boost::posix_time::time_duration time_from_epoch =
-        boost::posix_time::microsec_clock::universal_time() - epoch;
-
-    return time_from_epoch.total_microseconds()/1000;
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
+    return ms.count();
   }
 private:
   IOService     ios_;
