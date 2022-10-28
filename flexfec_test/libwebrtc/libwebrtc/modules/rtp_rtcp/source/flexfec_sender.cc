@@ -113,6 +113,7 @@ bool FlexfecSender::AddRtpPacketAndGenerateFec(const RtpPacketToSend& packet) {
   // TODO(brandtr): Generalize this SSRC check when we support multistream
   // protection.
   RTC_DCHECK_EQ(packet.Ssrc(), protected_media_ssrc_);
+  // 直接调用ulpfec
   return ulpfec_generator_.AddRtpPacketAndGenerateFec(
              packet.data(), packet.payload_size(), packet.headers_size()) == 0;
 }
@@ -125,6 +126,7 @@ std::vector<std::unique_ptr<RtpPacketToSend>> FlexfecSender::GetFecPackets() {
   std::vector<std::unique_ptr<RtpPacketToSend>> fec_packets_to_send;
   fec_packets_to_send.reserve(ulpfec_generator_.generated_fec_packets_.size());
   for (const auto* fec_packet : ulpfec_generator_.generated_fec_packets_) {
+    // 按上述格式封装每个fec包头
     std::unique_ptr<RtpPacketToSend> fec_packet_to_send(
         new RtpPacketToSend(&rtp_header_extension_map_));
     fec_packet_to_send->set_packet_type(

@@ -154,6 +154,7 @@ int UlpfecGenerator::AddRtpPacketAndGenerateFec(const uint8_t* data_buffer,
     RTC_DCHECK_GE(rtp_header_length, kRtpHeaderSize);
     last_media_packet_rtp_header_length_ = rtp_header_length;
   }
+  // 根据marker位来确定是否是一个完整的帧
   if (marker_bit) {
     ++num_protected_frames_;
     complete_frame = true;

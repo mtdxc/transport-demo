@@ -67,12 +67,12 @@ void FlexfecReceiver::OnRtpPacket(const RtpPacketReceived& packet) {
   // recovered packets by RTX from recovered packets by FlexFEC.
   if (packet.recovered())
     return;
-
+  // 把接到的包进行记录
   std::unique_ptr<ForwardErrorCorrection::ReceivedPacket> received_packet =
       AddReceivedPacket(packet);
   if (!received_packet)
     return;
-
+  // 尝试恢复数据 
   ProcessReceivedPacket(*received_packet);
 }
 
@@ -97,6 +97,8 @@ FlexfecReceiver::AddReceivedPacket(const RtpPacketReceived& packet) {
       new ForwardErrorCorrection::ReceivedPacket());
   received_packet->seq_num = packet.SequenceNumber();
   received_packet->ssrc = packet.Ssrc();
+  // 这段代码中 && packet.PayloadType() == 113 是因为我们mediasoup引入fec时使用同一条流，这里会引入一个bug导致无法解包
+  // 只有fec包能进入这里
   if (received_packet->ssrc == ssrc_ && packet.PayloadType() == 113) {
     // This is a FlexFEC packet.
     if (packet.payload_size() < kMinFlexfecHeaderSize) {

@@ -146,20 +146,23 @@ int ForwardErrorCorrection::EncodeFec(const PacketList& media_packets,
   }
 
   // Prepare generated FEC packets.
+  // 根据保护因子和媒体包来确定fec包的个数
   int num_fec_packets = NumFecPackets(num_media_packets, protection_factor);
   if (num_fec_packets == 0) {
     return 0;
   }
+  // 每个fec包都会进入到产生队列中
   for (int i = 0; i < num_fec_packets; ++i) {
     memset(generated_fec_packets_[i].data, 0, IP_PACKET_SIZE);
     // Use this as a marker for untouched packets.
     generated_fec_packets_[i].length = 0;
     fec_packets->push_back(&generated_fec_packets_[i]);
   }
-
+  // 这个位置就是根据我们的网络类型和媒体包数去查对应的表
   internal::PacketMaskTable mask_table(fec_mask_type, num_media_packets);
   packet_mask_size_ = internal::PacketMaskSize(num_media_packets);
   memset(packet_masks_, 0, num_fec_packets * packet_mask_size_);
+  // 根据不同的表产生不同的mask掩码 
   internal::GeneratePacketMasks(num_media_packets, num_fec_packets,
                                 num_important_packets, use_unequal_protection,
                                 &mask_table, packet_masks_);
@@ -174,6 +177,7 @@ int ForwardErrorCorrection::EncodeFec(const PacketList& media_packets,
   }
   packet_mask_size_ = internal::PacketMaskSize(num_mask_bits);
 
+  // 产生fec数据
   // Write FEC packets to |generated_fec_packets_|.
   GenerateFecPayloads(media_packets, num_fec_packets);
   // TODO(brandtr): Generalize this when multistream protection support is
@@ -189,6 +193,7 @@ int ForwardErrorCorrection::EncodeFec(const PacketList& media_packets,
 int ForwardErrorCorrection::NumFecPackets(int num_media_packets,
                                           int protection_factor) {
   // Result in Q0 with an unsigned round.
+  // 该算法基本保证最大48g
   int num_fec_packets = (num_media_packets * protection_factor + (1 << 7)) >> 8;
   // Generate at least one FEC packet if we need protection.
   if (protection_factor > 0 && num_fec_packets == 0) {
@@ -500,6 +505,7 @@ void ForwardErrorCorrection::InsertPacket(
   // TODO(marpan/holmer): We should be able to improve detection/discarding of
   // old FEC packets based on timestamp information or better sequence number
   // thresholding (e.g., to distinguish between wrap-around and reordering).
+  // 此处 && received_packet.is_fec的代码原先没有，是为了解决同ssrc问题
   if (!received_fec_packets_.empty() &&
   received_packet.ssrc == received_fec_packets_.front()->ssrc && received_packet.is_fec) {
     // It only makes sense to detect wrap-around when |received_packet|
@@ -518,13 +524,13 @@ void ForwardErrorCorrection::InsertPacket(
       }
     }
   }
-
+  // 根据不同数据类型插入不同队列，媒体包直接当做已恢复包
   if (received_packet.is_fec) {
     InsertFecPacket(*recovered_packets, received_packet);
   } else {
     InsertMediaPacket(recovered_packets, received_packet);
   }
-
+  // 清除旧数据
   DiscardOldRecoveredPackets(recovered_packets);
 }
 
@@ -738,7 +744,7 @@ void ForwardErrorCorrection::DecodeFec(const ReceivedPacket& received_packet,
   if (recovered_packets->size() == max_media_packets) {
     const RecoveredPacket* back_recovered_packet =
         recovered_packets->back().get();
-
+    // 这里的 && !received_packet.is_fec 代码原版没有，因为测试使用同一条ssrc需要在这里区分fec包，否则会触发异常情况导致恢复队列重置
     if (received_packet.ssrc == back_recovered_packet->ssrc && !received_packet.is_fec) {
       const unsigned int seq_num_diff =
           MinDiff(received_packet.seq_num, back_recovered_packet->seq_num);
@@ -752,8 +758,9 @@ void ForwardErrorCorrection::DecodeFec(const ReceivedPacket& received_packet,
       }
     }
   }
-
+  // 根据接收的包类型分别插入不同的队列中
   InsertPacket(received_packet, recovered_packets);
+  // 尝试恢复数据
   AttemptRecovery(recovered_packets);
 }
 
