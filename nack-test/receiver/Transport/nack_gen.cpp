@@ -33,6 +33,12 @@ namespace transportdemo {
   NackGenerator::~NackGenerator() {
   }
 
+  uint64_t NackGenerator::GetCurrentStamp64() {
+      std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+      std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
+      return ms.count();
+  }
+
   // Returns true if this is a found nacked packet. False otherwise.
   bool NackGenerator::ReceivePacket(TESTTPPacketPtr packet) {
     TESTTPHeader* header = reinterpret_cast<TESTTPHeader *>(packet->mutable_buffer());

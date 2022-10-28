@@ -12,8 +12,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
+add_definitions(-DASIO_STANDALONE)
 include_directories(
-        ${CMAKE_BOOST_DIR}/include
+        ${CMAKE_SOURCE_DIR}/../../asio/asio/include
         ${CMAKE_SOURCE_DIR}/Transport
         ${CMAKE_SOURCE_DIR}/Transport/boost-asio
 )
@@ -29,12 +30,12 @@ add_executable(
         Transport/boost-asio/udp_sender.cpp
         Transport/nack_gen.cpp
 )
-target_link_libraries(
-        receiver
-        boost_thread
-        boost_system
-        boost_filesystem
-        boost_program_options
-        boost_date_time
-        pthread
-)
+#target_link_libraries(
+#        receiver
+#        boost_thread
+#        boost_system
+#        boost_filesystem
+#        boost_program_options
+#        boost_date_time
+#        pthread
+#)

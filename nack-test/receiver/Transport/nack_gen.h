@@ -13,9 +13,7 @@
 
 #include <map>
 #include <memory>
-
-#include "../third_party/linux/boost/include/boost/date_time/posix_time/posix_time.hpp"
-//#include "/opt/homebrew/Cellar/boost/1.76.0/include/boost/date_time/posix_time/posix_time.hpp"
+#include <vector>
 
 namespace transportdemo {
   class TESTTPPacket;
@@ -60,13 +58,7 @@ namespace transportdemo {
       ((rhs > lhs) && (rhs - lhs > MaxValue / 2));
     }
 
-    uint64_t GetCurrentStamp64() {
-      boost::posix_time::ptime epoch(boost::gregorian::date(1970, boost::gregorian::Jan, 1));
-      boost::posix_time::time_duration time_from_epoch =
-      boost::posix_time::microsec_clock::universal_time() - epoch;
-
-      return time_from_epoch.total_microseconds()/1000;
-    }
+    uint64_t GetCurrentStamp64();
 
     bool ReceivePacket(TESTTPPacketPtr packet);
     size_t GetNackListLength() const {
@@ -87,9 +79,6 @@ namespace transportdemo {
     bool started{ false };
     uint16_t lastSeq{ 0u }; // Seq number of last valid packet.
     uint32_t rtt{ 0u };     // Round trip time (ms).
-
-
-
   };
 
 
