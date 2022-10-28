@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <iomanip>
 
 std::string bytes_to_hex(const uint8_t *buf, std::size_t len, std::size_t num_per_line = 8) {
   if (buf == NULL || len == 0 || num_per_line == 0) {

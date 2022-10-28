@@ -107,7 +107,7 @@ inline DataSize operator*(const DataRate rate,
   int64_t microbits = rate.bps() * duration.us();
   return DataSize::Bytes((microbits + 4000000) / 8000000);
 }
-inline constexpr DataSize operator*(const TimeDelta duration,
+inline DataSize operator*(const TimeDelta duration,
                                     const DataRate rate) {
   return rate * duration;
 }

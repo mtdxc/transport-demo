@@ -59,7 +59,7 @@ class Frequency final : public rtc_units_impl::RelativeUnit<Frequency> {
   static constexpr bool one_sided = true;
 };
 
-inline constexpr Frequency operator/(int64_t nominator,
+inline Frequency operator/(int64_t nominator,
                                      const TimeDelta& interval) {
   constexpr int64_t kKiloPerMicro = 1000 * 1000000;
 //  RTC_DCHECK_LE(nominator, std::numeric_limits<int64_t>::max() / kKiloPerMicro);
@@ -68,7 +68,7 @@ inline constexpr Frequency operator/(int64_t nominator,
   return Frequency::MilliHertz(nominator * kKiloPerMicro / interval.us());
 }
 
-inline constexpr TimeDelta operator/(int64_t nominator,
+inline TimeDelta operator/(int64_t nominator,
                                      const Frequency& frequency) {
   constexpr int64_t kMegaPerMilli = 1000000 * 1000;
 //  RTC_DCHECK_LE(nominator, std::numeric_limits<int64_t>::max() / kMegaPerMilli);
@@ -80,7 +80,7 @@ inline constexpr TimeDelta operator/(int64_t nominator,
 inline double operator*(Frequency frequency, TimeDelta time_delta) {
   return frequency.hertz<double>() * time_delta.seconds<double>();
 }
-inline constexpr double operator*(TimeDelta time_delta, Frequency frequency) {
+inline double operator*(TimeDelta time_delta, Frequency frequency) {
   return frequency * time_delta;
 }
 
