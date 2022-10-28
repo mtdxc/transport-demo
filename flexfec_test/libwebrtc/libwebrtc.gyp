@@ -6,10 +6,6 @@
       '../libuv/uv.gyp:libuv',
       '../openssl/openssl.gyp:openssl'
     ],
-    'defines':
-    [
-      'WEBRTC_POSIX'
-    ],
     'direct_dependent_settings': {
       'include_dirs':
       [
@@ -64,44 +60,6 @@
       'libwebrtc/modules/congestion_controller/rtp/send_time_history.cc',
       'libwebrtc/modules/congestion_controller/rtp/transport_feedback_adapter.cc',
       'libwebrtc/modules/congestion_controller/rtp/control_handler.cc',
-      # C++ source files fec.
-      'libwebrtc/modules/rtp_rtcp/source/flexfec_header_reader_writer.cc',
-      'libwebrtc/modules/rtp_rtcp/source/ulpfec_header_reader_writer.cc',
-      'libwebrtc/modules/rtp_rtcp/source/flexfec_receiver.cc',
-      'libwebrtc/modules/rtp_rtcp/source/forward_error_correction.cc',
-      'libwebrtc/api/rtp_headers.cc',
-      'libwebrtc/api/media_types.cc',
-      'libwebrtc/api/audio_options.cc',
-      'libwebrtc/api/media_stream_interface.cc',
-      'libwebrtc/api/rtp_packet_info.cc',
-      'libwebrtc/api/rtp_parameters.cc',
-      'libwebrtc/api/video/hdr_metadata.cc',
-      'libwebrtc/api/video/video_content_type.cc',
-      'libwebrtc/rtc_base/copy_on_write_buffer.cc',
-      'libwebrtc/rtc_base/critical_section.cc',
-      'libwebrtc/rtc_base/logging.cc',
-      'libwebrtc/rtc_base/zero_memory.cc',
-      'libwebrtc/system_wrappers/source/clock.cc',
-      'libwebrtc/rtc_base/synchronization/sequence_checker.cc',
-      'libwebrtc/rtc_base/synchronization/rw_lock_wrapper.cc',
-      'libwebrtc/rtc_base/synchronization/rw_lock_posix.cc',
-      'libwebrtc/rtc_base/checks.cc',
-      'libwebrtc/modules/rtp_rtcp/source/rtp_packet.cc',
-      'libwebrtc/modules/rtp_rtcp/source/forward_error_correction_internal.cc',
-      'libwebrtc/modules/rtp_rtcp/source/rtp_header_extension_map.cc',
-      'libwebrtc/modules/rtp_rtcp/source/rtp_generic_frame_descriptor.cc',
-      'libwebrtc/modules/rtp_rtcp/source/rtp_header_extensions.cc',
-      'libwebrtc/rtc_base/time_utils.cc',
-      'libwebrtc/rtc_base/string_utils.cc',
-      'libwebrtc/rtc_base/string_encode.cc',
-      'libwebrtc/rtc_base/strings/string_builder.cc',
-      'libwebrtc/rtc_base/platform_thread_types.cc',
-      'libwebrtc/api/task_queue/task_queue_base.cc',
-      'libwebrtc/modules/rtp_rtcp/source/fec_private_tables_random.cc',
-      'libwebrtc/modules/rtp_rtcp/source/fec_private_tables_bursty.cc',
-      'libwebrtc/modules/rtp_rtcp/source/rtp_dependency_descriptor_extension.cc',
-      'libwebrtc/modules/rtp_rtcp/source/rtp_generic_frame_descriptor_extension.cc',
-      'libwebrtc/modules/rtp_rtcp/source/rtp_packet_received.cc',
       # C++ include files.
       'libwebrtc/system_wrappers/source/field_trial.h',
       'libwebrtc/rtc_base/rate_statistics.h',
@@ -142,7 +100,6 @@
       'libwebrtc/modules/remote_bitrate_estimator/inter_arrival.h',
       'libwebrtc/modules/remote_bitrate_estimator/overuse_detector.h',
       'libwebrtc/modules/remote_bitrate_estimator/overuse_estimator.h',
-      'libwebrtc/modules/remote_bitrate_estimator/bwe_defines.h',
       'libwebrtc/modules/remote_bitrate_estimator/aimd_rate_control.h',
       'libwebrtc/modules/remote_bitrate_estimator/remote_bitrate_estimator_abs_send_time.h',
       'libwebrtc/modules/remote_bitrate_estimator/include/remote_bitrate_estimator.h',
@@ -165,8 +122,44 @@
       'libwebrtc/modules/congestion_controller/rtp/send_time_history.h',
       'libwebrtc/modules/congestion_controller/rtp/transport_feedback_adapter.h',
       'libwebrtc/modules/congestion_controller/rtp/control_handler.h',
+      # C++ source files fec.
+      'libwebrtc/modules/rtp_rtcp/source/flexfec_header_reader_writer.cc',
+      'libwebrtc/modules/rtp_rtcp/source/ulpfec_header_reader_writer.cc',
+      'libwebrtc/modules/rtp_rtcp/source/flexfec_receiver.cc',
+      'libwebrtc/modules/rtp_rtcp/source/forward_error_correction.cc',
+      'libwebrtc/modules/rtp_rtcp/source/rtp_packet.cc',
+      'libwebrtc/modules/rtp_rtcp/source/forward_error_correction_internal.cc',
+      'libwebrtc/modules/rtp_rtcp/source/rtp_header_extension_map.cc',
+      'libwebrtc/modules/rtp_rtcp/source/rtp_generic_frame_descriptor.cc',
+      'libwebrtc/modules/rtp_rtcp/source/rtp_header_extensions.cc',
+      'libwebrtc/api/rtp_headers.cc',
+      'libwebrtc/api/media_types.cc',
+      'libwebrtc/api/audio_options.cc',
+      'libwebrtc/api/media_stream_interface.cc',
+      'libwebrtc/api/rtp_packet_info.cc',
+      'libwebrtc/api/rtp_parameters.cc',
+      'libwebrtc/api/video/hdr_metadata.cc',
+      'libwebrtc/api/video/video_content_type.cc',
+      'libwebrtc/api/task_queue/task_queue_base.cc',
       'libwebrtc/api/video/color_space.cc',
-      'libwebrtc/mp_helpers.h',
+      'libwebrtc/rtc_base/copy_on_write_buffer.cc',
+      'libwebrtc/rtc_base/critical_section.cc',
+      'libwebrtc/rtc_base/logging.cc',
+      'libwebrtc/rtc_base/zero_memory.cc',
+      'libwebrtc/rtc_base/synchronization/sequence_checker.cc',
+      'libwebrtc/rtc_base/synchronization/rw_lock_wrapper.cc',
+      'libwebrtc/rtc_base/checks.cc',
+      'libwebrtc/rtc_base/time_utils.cc',
+      'libwebrtc/rtc_base/string_utils.cc',
+      'libwebrtc/rtc_base/string_encode.cc',
+      'libwebrtc/rtc_base/strings/string_builder.cc',
+      'libwebrtc/rtc_base/platform_thread_types.cc',
+      'libwebrtc/system_wrappers/source/clock.cc',
+      'libwebrtc/modules/rtp_rtcp/source/fec_private_tables_random.cc',
+      'libwebrtc/modules/rtp_rtcp/source/fec_private_tables_bursty.cc',
+      'libwebrtc/modules/rtp_rtcp/source/rtp_dependency_descriptor_extension.cc',
+      'libwebrtc/modules/rtp_rtcp/source/rtp_generic_frame_descriptor_extension.cc',
+      'libwebrtc/modules/rtp_rtcp/source/rtp_packet_received.cc',
       # C++ include files fec.
       'libwebrtc/modules/rtp_rtcp/source/byte_io.h',
       'libwebrtc/modules/rtp_rtcp/source/flexfec_header_reader_writer.h',
@@ -178,11 +171,19 @@
       'libwebrtc/modules/rtp_rtcp/include/flexfec_receiver.h',
       'libwebrtc/modules/rtp_rtcp/include/rtp_header_extension_map.h',
       'libwebrtc/modules/rtp_rtcp/include/ulpfec_receiver.h',
+      'libwebrtc/modules/rtp_rtcp/source/rtp_packet.h',
+      'libwebrtc/modules/rtp_rtcp/source/forward_error_correction_internal.h',
+      'libwebrtc/modules/rtp_rtcp/include/rtp_header_extension_map.h',
+      'libwebrtc/modules/rtp_rtcp/source/rtp_generic_frame_descriptor.h',
+      'libwebrtc/modules/rtp_rtcp/source/rtp_header_extensions.h',
+      'libwebrtc/modules/rtp_rtcp/source/fec_private_tables_random.h',
+      'libwebrtc/modules/rtp_rtcp/source/fec_private_tables_bursty.h',
+      'libwebrtc/modules/rtp_rtcp/source/rtp_dependency_descriptor_extension.h',
+      'libwebrtc/modules/rtp_rtcp/source/rtp_generic_frame_descriptor_extension.h',
       'libwebrtc/api/rtp_headers.h',
       'libwebrtc/api/array_view.h',
       'libwebrtc/api/media_types.h',
       'libwebrtc/api/audio_options.h',
-      'libwebrtc/system_wrappers/include/clock.h',
       'libwebrtc/api/audio_options.h',
       'libwebrtc/api/media_stream_interface.h',
       'libwebrtc/api/audio_options.h',
@@ -193,6 +194,9 @@
       'libwebrtc/api/scoped_refptr.h',
       'libwebrtc/api/video/hdr_metadata.h',
       'libwebrtc/api/video/video_content_type.h',
+      'libwebrtc/api/task_queue/task_queue_base.h',
+      'libwebrtc/api/video/color_space.h',
+      'libwebrtc/system_wrappers/include/clock.h',
       'libwebrtc/rtc_base/atomic_ops.h',
       'libwebrtc/rtc_base/buffer.h',
       'libwebrtc/rtc_base/checks.h',
@@ -203,30 +207,18 @@
       'libwebrtc/rtc_base/zero_memory.h',
       'libwebrtc/rtc_base/synchronization/sequence_checker.h',
       'libwebrtc/rtc_base/synchronization/rw_lock_wrapper.h',
-      'libwebrtc/rtc_base/synchronization/rw_lock_posix.h',
-      'libwebrtc/modules/rtp_rtcp/source/rtp_packet.h',
-      'libwebrtc/modules/rtp_rtcp/source/forward_error_correction_internal.h',
-      'libwebrtc/modules/rtp_rtcp/include/rtp_header_extension_map.h',
-      'libwebrtc/modules/rtp_rtcp/source/rtp_generic_frame_descriptor.h',
-      'libwebrtc/modules/rtp_rtcp/source/rtp_header_extensions.h',
       'libwebrtc/rtc_base/time_utils.h',
       'libwebrtc/rtc_base/string_utils.h',
       'libwebrtc/rtc_base/string_encode.h',
       'libwebrtc/rtc_base/strings/string_builder.h',
       'libwebrtc/rtc_base/platform_thread_types.h',
-      'libwebrtc/api/task_queue/task_queue_base.h',
-      'libwebrtc/api/video/color_space.h',
-      'libwebrtc/modules/rtp_rtcp/source/fec_private_tables_random.h',
-      'libwebrtc/modules/rtp_rtcp/source/fec_private_tables_bursty.h',
-      'libwebrtc/modules/rtp_rtcp/source/rtp_dependency_descriptor_extension.h',
-      'libwebrtc/modules/rtp_rtcp/source/rtp_generic_frame_descriptor_extension.h',
       'libwebrtc/common_types.h'
     ],
     'include_dirs':
     [
       'libwebrtc',
       '../../include',
-      '../json/single_include/nlohmann'
+      '../json/single_include'
     ],
     'conditions':
     [
@@ -242,10 +234,23 @@
       # Platform-specifics.
 
       [ 'OS != "win"', {
-        'cflags': [ '-std=c++11' ]
+        'cflags': [ '-std=c++11' ],
+        'defines' : [ 'WEBRTC_POSIX' ],
+        'sources' : [
+          'libwebrtc/rtc_base/synchronization/rw_lock_posix.cc',
+        ],
+      }, {
+        'defines' : [ 'WEBRTC_WIN', 'NOMINMAX' ],
+        'sources' : [
+          'libwebrtc/rtc_base/synchronization/rw_lock_win.cc',
+        ],
+        'msvs_configuration_attributes': {
+          'CharacterSet': '1',  # Use Multi-byte Character Set.
+        }
       }],
 
       [ 'OS == "mac"', {
+        'defines' : [ 'WEBRTC_MAC' ],
         'xcode_settings':
         {
           'OTHER_CPLUSPLUSFLAGS' : [ '-std=c++11' ]

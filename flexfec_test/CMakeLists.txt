@@ -60,8 +60,6 @@ add_executable(${PROJECT_NAME}
         libwebrtc/libwebrtc/api/task_queue/task_queue_base.cc
         libwebrtc/libwebrtc/api/video/video_content_type.cc
         libwebrtc/libwebrtc/rtc_base/race_checker.cc
-        libwebrtc/libwebrtc/modules/rtp_rtcp/source/forward_error_correction_85.cc
-        libwebrtc/libwebrtc/modules/rtp_rtcp/source/rtp_packet_85.cc
         )
 
 target_link_libraries(${PROJECT_NAME} 

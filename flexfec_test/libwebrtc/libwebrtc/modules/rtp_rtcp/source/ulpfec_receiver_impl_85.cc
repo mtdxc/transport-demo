@@ -180,7 +180,7 @@ int32_t UlpfecReceiverImpl::ProcessReceivedFec() {
         rtp_packet.IdentifyExtensions(extensions_);
         // Reset buffer reference, so zeroing would work on a buffer with a
         // single reference.
-        packet->data = rtc::CopyOnWriteBuffer85(0);
+        packet->data = rtc::CopyOnWriteBuffer(0);
         rtp_packet.ZeroMutableExtensions();
         packet->data = rtp_packet.Buffer();
         // Ensure that zeroing of extensions was done in place.

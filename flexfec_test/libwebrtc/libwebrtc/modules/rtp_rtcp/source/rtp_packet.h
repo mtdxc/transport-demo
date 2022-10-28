@@ -17,7 +17,7 @@
 #include "api/array_view.h"
 #include "modules/rtp_rtcp/include/rtp_header_extension_map.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
-#include "rtc_base/copy_on_write_buffer_85.h"
+#include "rtc_base/copy_on_write_buffer.h"
 
 namespace webrtc {
 
@@ -46,7 +46,7 @@ class RtpPacket {
   bool Parse(rtc::ArrayView<const uint8_t> packet);
 
   // Parse and move given buffer into Packet.
-  bool Parse(rtc::CopyOnWriteBuffer85 packet);
+  bool Parse(rtc::CopyOnWriteBuffer packet);
 
   // Maps extensions id to their types.
   void IdentifyExtensions(const ExtensionManager& extensions);
@@ -69,7 +69,7 @@ class RtpPacket {
   }
 
   // Buffer.
-  rtc::CopyOnWriteBuffer85 Buffer() const { return buffer_; }
+  rtc::CopyOnWriteBuffer Buffer() const { return buffer_; }
   size_t capacity() const { return buffer_.capacity(); }
   size_t size() const {
     return payload_offset_ + payload_size_ + padding_size_;
@@ -196,7 +196,7 @@ class RtpPacket {
   ExtensionManager extensions_;
   std::vector<ExtensionInfo> extension_entries_;
   size_t extensions_size_ = 0;  // Unaligned.
-  rtc::CopyOnWriteBuffer85 buffer_;
+  rtc::CopyOnWriteBuffer buffer_;
 };
 
 template <typename Extension>

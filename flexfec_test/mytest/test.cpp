@@ -77,9 +77,6 @@ namespace webrtc {
 
     outfile.close();
     fclose(h264_new);
-
-
-
   }
 
 
