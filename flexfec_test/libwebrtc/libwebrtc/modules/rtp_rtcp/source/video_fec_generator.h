@@ -14,7 +14,7 @@
 #include <memory>
 #include <vector>
 
-#include "api/units/data_rate_85.h"
+#include "api/units/data_rate.h"
 #include "modules/include/module_fec_types.h"
 #include "modules/rtp_rtcp/source/rtp_packet_to_send_85.h"
 

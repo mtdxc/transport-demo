@@ -103,20 +103,18 @@ class Timestamp final : public rtc_units_impl::UnitBase<Timestamp> {
     }
     return Timestamp::us(us() - delta.us());
   }
-//  TimeDelta operator-(const Timestamp other) const {
-//    if (IsPlusInfinity() || other.IsMinusInfinity()) {
-//      // RTC_DCHECK(!IsMinusInfinity());
-//      // RTC_DCHECK(!other.IsPlusInfinity());
-//      return TimeDelta::PlusInfinity();
-//    } else if (IsMinusInfinity() || other.IsPlusInfinity()) {
-//      // RTC_DCHECK(!IsPlusInfinity());
-//      // RTC_DCHECK(!other.IsMinusInfinity());
-//      return TimeDelta::MinusInfinity();
-//    }
-//
-//
-//    return TimeDelta::us(us() - other.us());
-//  }
+  TimeDelta operator-(const Timestamp other) const {
+    if (IsPlusInfinity() || other.IsMinusInfinity()) {
+      // RTC_DCHECK(!IsMinusInfinity());
+      // RTC_DCHECK(!other.IsPlusInfinity());
+      return TimeDelta::PlusInfinity();
+    } else if (IsMinusInfinity() || other.IsPlusInfinity()) {
+      // RTC_DCHECK(!IsPlusInfinity());
+      // RTC_DCHECK(!other.IsMinusInfinity());
+      return TimeDelta::MinusInfinity();
+    }
+    return TimeDelta::us(us() - other.us());
+  }
   Timestamp& operator-=(const TimeDelta delta) {
     *this = *this - delta;
     return *this;

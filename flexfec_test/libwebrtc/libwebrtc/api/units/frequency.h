@@ -39,8 +39,7 @@ class Frequency final : public rtc_units_impl::RelativeUnit<Frequency> {
   static Frequency millihertz(T hertz) {
     static_assert(std::is_arithmetic<T>::value, "");
     return FromValue(hertz);
-  }
-  template <typename T = int64_t>
+  }  template <typename T = int64_t>
   T hertz() const {
     return ToFraction<1000, T>();
   }

@@ -20,7 +20,7 @@
 #include "rtc_base/numerics/safe_minmax.h"
 
 #include "Logger.hpp"
-#include "MpErrors.hpp"
+#include "MediaSoupErrors.hpp"
 
 #include <inttypes.h>
 #include <algorithm>

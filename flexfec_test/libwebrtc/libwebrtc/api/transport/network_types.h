@@ -11,7 +11,7 @@
 #ifndef API_TRANSPORT_NETWORK_TYPES_H_
 #define API_TRANSPORT_NETWORK_TYPES_H_
 
-#include "api/units/data_rate_85.h"
+#include "api/units/data_rate.h"
 #include "api/units/data_size.h"
 #include "api/units/time_delta.h"
 #include "api/units/timestamp.h"
