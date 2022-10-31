@@ -67,7 +67,7 @@
 
             it = this->nackList.erase(it);
           } else {
-          ++it;
+            ++it;
           }
 
           continue;
@@ -118,14 +118,15 @@
 3. 最后是根据 rtt 我们重传次数越多的包要的越频繁。
 
 ## 2.2 结果
+
 整体测试方案：
 1. 同一局域网中的两台安卓进行推拉流测试；
 2. 弱网限制由 Windows 机器中的 Network Emulator Client 软件进行模拟；
 3. 将拉流画面按 15 帧切割后逐帧对比变化程度（使用OpenCV编写的对比demo）；
 4. 两张图片相同则认为发生130ms的卡顿（15帧每秒——每帧 66.6ms ），后续依次类推计算出卡顿率（具体对比的demo和方法可以参考我的 github）；
 5. 得出结论包括：
-    - 客观（卡顿率变化、卡顿时长占比、卡顿次数占比、带宽变化）；
-    - 主观（观看感受、画面质感）。
+   - 客观（卡顿率变化、卡顿时长占比、卡顿次数占比、带宽变化）；
+   - 主观（观看感受、画面质感）。
 
 ### 客观结果展示：
   卡顿率统计： 20%丢包+100ms延迟场景
@@ -142,7 +143,7 @@
 
 wireshark抓包信息显示：
 
-    旧方案：无法抵抗20%丢包，没有全补上包导致丢包带宽估计算法降码率又重新上升探测的过程，影响观看体验。
+旧方案：无法抵抗20%丢包，没有全补上包导致丢包带宽估计算法降码率又重新上升探测的过程，影响观看体验。
 ![](image00.png)
 
 新方案：可以抵抗20%丢包，完全补上包没有触发丢包带宽估计，同时nack导致码率上升，从1.6m ~ 1.8m左右（12.5%）
@@ -156,24 +157,24 @@ wireshark抓包信息显示：
 # 三、mediasoup中引入FEC
 ## 3.1 FEC方案
   目前WebRTC的FEC方案有两个——UlpFEC、FlexFEC。
-- UlpFEC方案：
+- UlpFEC方案:
+
   UlpFEC在WebRTC中使用了RED进行封装（客户端使用原生的WebRTC打开，UlpFEC必须使用RED封装），具体的就不展开讨论了，而FlexFEC是可以单独进行封装的。这两种方式的实现难度会有所区别。
-
-UlpFEC中，FEC包会和普通的RTP包进行统一打包，也就意味着数据包的序列号是一起统计的。例如，现在有三个视频包和一个FEC包，那么这三个视频包的序列号和FEC包的序列号会合在一起——1（RTP）——2（RTP）——3（FEC）——4（RTP）。很显然，这样会影响我们mediasoup中的Nack队列的统计（因为我们的Nack队列是序号相减计算出来的）。
-
-而且mediasoup本身就不支持RED，那么实现起来我们还需要调整很多的东西，因此传统的UlpFEC的实现方式暂时不考虑。
+  
+  UlpFEC中，FEC包会和普通的RTP包进行统一打包，也就意味着数据包的序列号是一起统计的。例如，现在有三个视频包和一个FEC包，那么这三个视频包的序列号和FEC包的序列号会合在一起——1（RTP）——2（RTP）——3（FEC）——4（RTP）。很显然，这样会影响我们mediasoup中的Nack队列的统计（因为我们的Nack队列是序号相减计算出来的）。
+  而且mediasoup本身就不支持RED，那么实现起来我们还需要调整很多的东西，因此传统的UlpFEC的实现方式暂时不考虑。
 
 - FlexFEC方案：
-  FlexFEC其实底层的算法支持也还是在使用UlpFEC封装的，在这我们只是把他新的实现方式与旧的做一个区分，因此称为FlexFEC。
+
+  FlexFEC其实底层的算法支持也还是在使用UlpFEC封装的，在这我们只是把他新的实现方式与旧的做一个区分，因此称为FlexFEC。
 
 ### 客户端
   我们使用FlexFEC则比UlpFEC要方便的多。因为在上层不强制使用RED封装，而是提供了一个开关，例如客户端以下代码展示：
 ```c
-fieldtrials=”WebRTC-FlexFEC-03/Enabled/WebRTC-FlexFEC-03-Advertised/Enabled”
+fieldtrials="WebRTC-FlexFEC-03/Enabled/WebRTC-FlexFEC-03-Advertised/Enabled"
 
 // 1.假设你的sdk在call上层进行封装的
 //   那么你只能使用call中提供的设置流codec的接口，将flexfec的保护ssrc设置进去，例如：
-
 ...
 
   cricket::StreamParams stream;
@@ -191,7 +192,6 @@ fieldtrials=”WebRTC-FlexFEC-03/Enabled/WebRTC-FlexFEC-03-Advertised/Enabled”
 
 // 2.假设你的sdk在call下层进行封装的
 //   那么你只需要在创建 VideoSendStream 时将flexfec一起设置进去即可，例如：
-
 ...
 
   config.suspend_below_min_bitrate = video_config_.suspend_below_min_bitrate;
@@ -216,11 +216,15 @@ fieldtrials=”WebRTC-FlexFEC-03/Enabled/WebRTC-FlexFEC-03-Advertised/Enabled”
 
 ```
 ### 服务端
-  服务端部分需要添加FEC解码模块，并且应该在NACK模块之前，这样可以减少不必要的重传。
+
+服务端部分需要添加FEC解码模块，并且应该在NACK模块之前，这样可以减少不必要的重传。
+
 mediasoup的WebRTC代码还是m77版本的，因此我们将m77的fec解码部分全部迁移到mediasoup的目录中。
+
 ![](image03.png)
 
 随后在 RtpStreamRecv 接收rtp包的部分进行解码，解出来的数据上抛回producer。
+
 ```c++
 // RTC/RtpStreamRecv.hpp
 // 接收流部分添加flexfec解码对象，同时仿照 ReceivePacket 函数新增一个 FecReceivePacket 函数。
@@ -252,7 +256,7 @@ mediasoup的WebRTC代码还是m77版本的，因此我们将m77的fec解码部�
   bool RtpStreamRecv::FecReceivePacket(RTC::RtpPacket *packet, bool isRecover) {
     if (this->params.useFec) {
       MS_WARN_TAG(rtp,
-        "fec packet receive [ssrc:%" PRIu32 ", payloadType:%" PRIu8 ", seq:%" PRIu16,
+        "fec packet receive [ssrc:%" PRIu32 ", payloadType:%" PRIu8 ", seq:%" PRIu16 "]",
         packet->GetSsrc(),
         packet->GetPayloadType(),
         packet->GetSequenceNumber());
@@ -298,13 +302,13 @@ class Producer : public RTC::RtpStreamRecv::Listener,
 {
 
 ...
-	// 新增传入参数 isRecover
-	ReceiveRtpPacketResult ReceiveRtpPacket(RTC::RtpPacket* packet, bool isRecover);
+  // 新增传入参数 isRecover
+  ReceiveRtpPacketResult ReceiveRtpPacket(RTC::RtpPacket* packet, bool isRecover);
 	
-	private:
-		/* ---------- flexfec ---------- */
-		void OnRecoveredPacket(const uint8_t *packet, size_t length) override;
-		/* ---------- flexfec ---------- */
+private:
+  /* ---------- flexfec ---------- */
+  void OnRecoveredPacket(const uint8_t *packet, size_t length) override;
+  /* ---------- flexfec ---------- */
 ...
 }
 
@@ -353,11 +357,12 @@ void Producer::OnRecoveredPacket(const uint8_t* packet, size_t length) {
       recover_packet->GetPayloadType(),
       recover_packet->GetSequenceNumber());
 }
-	/* ---------- flexfec ---------- */
-
+/* ---------- flexfec ---------- */
 
 ```
+
 在Transport中还需要添加调用Producer的接收函数时传入isRecover值为true。
+
 ```c
 // RTC/Transport.cpp
 void Transport::ReceiveRtpPacket(RTC::RtpPacket* packet) {
@@ -367,6 +372,7 @@ void Transport::ReceiveRtpPacket(RTC::RtpPacket* packet) {
   ...
 }
 ```
+
 ## 3.2 结果讨论
   按照上述的方式完成后，我们进行了丢包+100ms延迟的测试。
 
@@ -385,6 +391,7 @@ void Transport::ReceiveRtpPacket(RTC::RtpPacket* packet) {
 # 四、相关知识
 ## ulpfec封包格式
   我们知道FEC在webrtc中的实现有两种，一个是基于通一条流red封装的ulpfec、一个是独立流flexfec。在我集成flexfec时，底层还是用的ulpfec的算法，因此我一并进行简单介绍（具体的代码就不说了，后面集中说代码）。
+
   直接看一下red封装的格式：
 ```
  0                   1                    2                   3
@@ -430,8 +437,8 @@ void Transport::ReceiveRtpPacket(RTC::RtpPacket* packet) {
 ```
 我们来看看它 block header 里的字段的意义：
 - F：标识是否存在多个red封装的标志：
-  1. 为1时标识后面是否有别的block,如果有则会出现多个同样的header；
-  2. 为0时，标识后面不会再有这个header line，同时最后block的timestamp和block length能够通过rtp推断出，所以会省略。
+   1. 为1时标识后面是否有别的block,如果有则会出现多个同样的header；
+   2. 为0时，标识后面不会再有这个header line，同时最后block的timestamp和block length能够通过rtp推断出，所以会省略。
 - block PT： block内容中的rtp payload type（也就是包原始的数据pt）；
 - block length： block的大小；
 - timestamp offset： block timestamp 相对于rtp header timestamp 的偏移量，如：red冗余的包序号是3，而rtp包的序号是5，那么3恢复出来的包头就需要通过该字段去计算。
@@ -455,9 +462,10 @@ void Transport::ReceiveRtpPacket(RTC::RtpPacket* packet) {
 ```
 
 在这里我先解释字段的意思：
-  R：这个字段为了标识该包是否是重传包，如果是重传包则必须把R置为1，对于正常的FEC包则必须为0；
-  F：表示为FEC包，当 R 位为 1时， F 位必须设置为 0 。如果R 位为 1 还把F置为1，那么这个包不会被处理。
-  P、X、CC、M 和 PT 字段用于确定恢复数据包的相应包头字段信息（事实上就是RTP头对应的几个标识的意思），换算过程比较复杂我们简单凝练了一下：
+
+- R：这个字段为了标识该包是否是重传包，如果是重传包则必须把R置为1，对于正常的FEC包则必须为0； 
+- F：表示为FEC包，当 R 位为 1时， F 位必须设置为 0 。如果R 位为 1 还把F置为1，那么这个包不会被处理。
+- P、X、CC、M 和 PT 字段用于确定恢复数据包的相应包头字段信息（事实上就是RTP头对应的几个标识的意思），换算过程比较复杂我们简单凝练了一下：
 
 假设在整个数据集T中丢失了一个数据包，我们需要恢复丢失序号包的包头内容，则需进行以下操作：
 1. 根据数据集T中其他已接收到数据包的包头前64位，换算出一个80位的字符串；
@@ -557,6 +565,7 @@ FEC主要用于提前冗余来抵抗丢包，在当前的网络环境中，最�
 
 ## 3.1 大帧随机丢包
   随机丢包伴随的特质是：随机、不连续。因此该方案的冗余策略多为不相邻的包进行冗余，来避免离散丢包造成的恢复率下降问题；
+
   在代码中，WebRTC是根据每一帧的大小进行冗，固定码表最大只能从12个包进行。具体的文件是：modules/rtp_rtcp/source/fec_private_tables_random.h 和 modules/rtp_rtcp/source/fec_private_tables_random.cc。怎么理解呢？我直接举个举个例子来串：
 
 
@@ -1339,10 +1348,13 @@ void ForwardErrorCorrection::AttemptRecovery(
 
 ## 5.1 问题解答
 问题1：在测试过程中，发现效果不理想，挨个数据信息查看后发现有部分数据包无法恢复导致卡顿了上升。
+
   解：在FlexfecReceiver以及使用到ssrc的地方都加上fec包的判断即可。
 
 问题2：在测试过程中，发现效果不理想，对比数据包内容后发现解码存在异常。
-  原因：fec部分上抛的OnRecoveredPacket函数中传上来的是fec解码模块内部的指针，我们直接用来进行构建发送数据包。而在mediasoup中，该数据包在下游会被修改seq等包头内容。导致fec内部的指针被操作，在使用该数据包进行后续恢复的时候出现异常导致无法播放。
+
+  原因：fec部分上抛的OnRecoveredPacket函数中传上来的是fec解码模块内部的指针，我们直接用来进行构建发送数据包。而在mediasoup中，该数据包在下游会被修改seq等包头内容。导致fec内部的指针被操作，在使用该数据包进行后续恢复的时候出现异常导致无法播放。
+
   修改部分的代码为：
 ```
 	void Producer::OnRecoveredPacket(const uint8_t* packet, size_t length) {
@@ -1359,7 +1371,9 @@ void ForwardErrorCorrection::AttemptRecovery(
 		this->ReceiveRtpPacket(recover_packet, true);
 	}
 ```
+
 ## 5.2 简单测试
+
   因此我们修复后，得到fec_rate 在255 级别具体恢复率的测试效果：
 
  场景 | fec包丢控制率 |	真实丢包率 
