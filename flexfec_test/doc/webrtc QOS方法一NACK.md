@@ -1,6 +1,5 @@
 # NACK实现
-[https://tools.ietf.org/html/rfc4585](https://tools.ietf.org/html/rfc4585)
-
+https://tools.ietf.org/html/rfc4585
 
 ## 1.1 概念
 

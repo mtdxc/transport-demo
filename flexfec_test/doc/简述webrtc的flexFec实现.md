@@ -37,7 +37,8 @@ a=ssrc-group:FEC-FR 3793049148 3529981269  //后面是flexfec的ssrc
 ```
 if (packet_masks_[pkt_mask_idx] & (1 << (7 - media_pkt_idx))) {
 ```
-media包个数<=16，mask 2字节，查表获得。media包<=48，mask 6字节，代码生成mask表。1字节能表示8个。最大能保护48个media包，超过了，就不参与异或了。
+media包个数<=16，mask 2字节，查表获得。media包<=48，mask 6字节，代码生成mask表。
+1字节能表示8个。最大能保护48个media包，超过了，就不参与异或了。
 
 
 目前仅支持行异或--适用随机情况，仅支持R、F=0的情况。R=0不支持重发、F=0表示灵活的mask表定义形式。
