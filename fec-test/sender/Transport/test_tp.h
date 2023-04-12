@@ -99,7 +99,7 @@ namespace transportdemo {
     std::size_t capacity() const { return capacity_; }
     UDPEndpoint &mutable_endpoint() { return endpoint_; }
     std::size_t length() const { return length_; }
-    void mod_length(std::size_t l) { length_ = l; }
+    void set_length(std::size_t l) { length_ = l; }
   public:
     const std::size_t capacity_;
     uint8_t           *buf_;

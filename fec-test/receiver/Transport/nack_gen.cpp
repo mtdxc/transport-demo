@@ -10,7 +10,7 @@
 #include "nack_gen.h"
 #include "pack.h"
 #include "test_tp.h"
-
+#include <chrono>
 namespace transportdemo {
   /* Static. */
 
@@ -47,7 +47,6 @@ namespace transportdemo {
     if (!this->started) {
       this->started = true;
       this->lastSeq = seq;
-
       return false;
     }
 
@@ -66,13 +65,11 @@ namespace transportdemo {
 
         return true;
       }
-
       return false;
     }
 
     AddPacketsToNackList(this->lastSeq + 1, seq);
     this->lastSeq = seq;
-
     return false;
   }
 
@@ -80,20 +77,17 @@ namespace transportdemo {
 
     // Remove old packets.
     auto it = this->nackList.lower_bound(seqEnd - MaxPacketAge);
-
     this->nackList.erase(this->nackList.begin(), it);
 
     // If the nack list is too large, remove packets from the nack list until
     // the latest first packet of a keyframe. If the list is still too large,
     // clear it and request a keyframe.
     uint16_t numNewNacks = seqEnd - seqStart;
-
     if (this->nackList.size() + numNewNacks > MaxNackPackets)
     {
       if (this->nackList.size() + numNewNacks > MaxNackPackets)
       {
         this->nackList.clear();
-
         return;
       }
     }
@@ -115,16 +109,13 @@ namespace transportdemo {
     std::vector<uint16_t> nackBatch;
 
     auto it = this->nackList.begin();
-
     while (it != this->nackList.end()) {
       NackInfo& nackInfo = it->second;
       uint16_t seq       = nackInfo.seq;
 
       // clang-format off
-//      if ( filter == NackFilter::SEQ &&
-//           nackInfo.sentAtMs == 0 &&
-//           ( nackInfo.sendAtSeq == this->lastSeq ||
-//             SeqHigherThan(this->lastSeq, nackInfo.sendAtSeq))
+//      if ( filter == NackFilter::SEQ && nackInfo.sentAtMs == 0 &&
+//           (nackInfo.sendAtSeq == this->lastSeq || SeqHigherThan(this->lastSeq, nackInfo.sendAtSeq))
 //          ) {
 //        nackBatch.emplace_back(seq);
 //        nackInfo.retries++;
@@ -137,12 +128,12 @@ namespace transportdemo {
 //        }
 //
 //        continue;
-//        }
+//      }
+
       auto limit_var = uint64_t( this->rtt / CalculateRttLimit2SendNack(nackInfo.retries) );
-
-      if (filter == NackFilter::TIME && nowMs - nackInfo.sentAtMs >= limit_var) {
-
-//      if (filter == NackFilter::TIME && nowMs - nackInfo.sentAtMs >= this->rtt) {
+      if (filter == NackFilter::TIME && nowMs - nackInfo.sentAtMs >= limit_var)
+//      if (filter == NackFilter::TIME && nowMs - nackInfo.sentAtMs >= this->rtt) 
+      {
         nackBatch.emplace_back(seq);
         nackInfo.retries++;
         auto oldMs = nackInfo.sentAtMs;

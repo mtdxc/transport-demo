@@ -45,7 +45,7 @@ private:
   }
 private:
   IOService     ios_;
-  UDPSocketPrt  socket_;
+  UDPSocketPtr  socket_;
   std::string   local_ip_;
   uint16_t      local_port_;
   uint64_t      timer_ms_;

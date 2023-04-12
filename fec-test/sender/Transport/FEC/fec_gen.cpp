@@ -62,8 +62,8 @@ namespace transportdemo {
       return ;
 
     for(int i = fec_k; i < fec_n; ++i){
-      fec_encode(fec, (void**)input_data, output_data[i], i, packet_size);
-      callback(last_group_id, fec_k, fec_n, i, output_data[i], packet_size);
+      fec_encode(fec,(void**)input_data,output_data[i],i,packet_size);
+      callback(last_group_id,fec_k,fec_n,i,output_data[i],packet_size);
       ++packet_count;
     }
 

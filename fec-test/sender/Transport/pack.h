@@ -2,14 +2,15 @@
  * @author      : dog head
  * @date        : Created in 2022/3/1 3:44 下午
  * @mail        : qw225967@github.com
- * @project     : fec_test
+ * @project     : nack_test
  * @file        : pack.h
  * @description : TODO
  *******************************************************/
 
 
-#ifndef FEC_TEST_PACK_H
-#define FEC_TEST_PACK_H
+#ifndef NACK_TEST_PACK_H
+#define NACK_TEST_PACK_H
+
 #include <memory>
 #include <vector>
 
@@ -23,9 +24,7 @@ namespace transportdemo {
     static TESTTPPacketPtr packing_nack(const std::vector<uint16_t> &sequence_vector);
     static bool unpacking_nack(TESTTPPacketPtr pkt, std::vector<uint16_t> &sequence_vector);
     static TESTTPPacketPtr rtt_packing(uint16_t num);
-    static TESTTPPacketPtr fec_packing(uint32_t groupId, int16_t k, int16_t n, int16_t index, uint8_t *data,
-                                       size_t size);
   };
 } // transport-demo
 
-#endif //FEC_TEST_PACK_H
+#endif //NACK_TEST_PACK_H

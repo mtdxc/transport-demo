@@ -35,7 +35,7 @@ namespace transportdemo {
     TESTTPPayload *payload = nullptr;
     payload = reinterpret_cast<TESTTPPayload *>(packet->mutable_buffer() + RTP_HEADER_SIZE_BYTES);
     memset(payload->buf, 0x0, sizeof(uint8_t));
-    packet->mod_length(RTP_HEADER_SIZE_BYTES + 1300);
+    packet->set_length(RTP_HEADER_SIZE_BYTES + 1300);
 
     return packet;
   }
@@ -75,7 +75,7 @@ namespace transportdemo {
     uint16_t length = static_cast<uint16_t>(RTCP_HEADER_SIZE_BYTES + NACK_ITEM_BYTES * nack_item_count);
 
     header->length = htonl(length);
-    packet->mod_length(length);
+    packet->set_length(length);
 
     return packet;
   }
@@ -119,7 +119,7 @@ namespace transportdemo {
     uint16_t length = static_cast<uint16_t>(RTCP_HEADER_SIZE_BYTES + RTT_PAYLOAD_BYTES);
 
     header->length = htonl(length);
-    packet->mod_length(length);
+    packet->set_length(length);
 
     return packet;
   }

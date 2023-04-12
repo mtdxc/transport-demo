@@ -23,11 +23,9 @@ namespace transportdemo {
   private:
     enum {
       kMaxN = 128, // k或者n的最大值，简单设置为128，没必要设置得太大
-
     };
   public:
     FECGenerator(int k, int n, int packetSize);
-
     ~FECGenerator();
 
     void Encode(uint8_t *data, size_t size, std::function<void(uint64_t groupId, int16_t k, int16_t n, int16_t index, uint8_t *data,

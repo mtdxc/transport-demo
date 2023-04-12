@@ -36,7 +36,6 @@ namespace webrtc {
     webrtc::FlexfecReceiver * receiver_;
     webrtc85::FlexfecSender * sender_;
     std::ofstream outfile;
-    FILE *h264_new;
 
     std::map<uint16_t, webrtc::RtpPacketReceived> record_map;
   };

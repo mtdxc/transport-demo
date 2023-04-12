@@ -24,26 +24,24 @@ namespace transportdemo {
   class NackGenerator {
   private:
     struct NackInfo
-        {
-          NackInfo() = default;
-          explicit NackInfo(uint16_t seq, uint16_t sendAtSeq, uint64_t ms, uint8_t time)
-          : seq(seq)
-          , sendAtSeq(sendAtSeq)
-          , sentAtMs(ms)
-          , retries(time) {
-          }
+    {
+      NackInfo() = default;
+      explicit NackInfo(uint16_t seq, uint16_t sendAtSeq, uint64_t ms, uint8_t time)
+          : seq(seq), sendAtSeq(sendAtSeq), sentAtMs(ms), retries(time)
+      {
+      }
 
-          uint16_t seq{ 0u };
-          uint16_t sendAtSeq{ 0u };
-          uint64_t sentAtMs{ 0u };
-          uint8_t retries{ 0u };
-        };
+      uint16_t seq{0u};
+      uint16_t sendAtSeq{0u};
+      uint64_t sentAtMs{0u};
+      uint8_t retries{0u};
+    };
 
     enum class NackFilter
-        {
+    {
       SEQ,
       TIME
-        };
+    };
 
   public:
     explicit NackGenerator();

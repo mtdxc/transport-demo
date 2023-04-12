@@ -51,7 +51,7 @@ public:
 
 private:
   IOService     ios_;
-  UDPSocketPrt  socket_;
+  UDPSocketPtr  socket_;
   std::string   local_ip_;
   uint16_t      local_port_;
   uint64_t      timer_ms_;
@@ -59,7 +59,7 @@ private:
   DeadlineTimer timer_;
 
 
-  std::unordered_map<uint16_t, UDPSocketPrt> pkt_map_;
+  std::unordered_map<uint16_t, UDPSocketPtr> pkt_map_;
   std::unordered_map<uint16_t, uint32_t> rtt_count_map_;
   uint16_t rtt_count_num_;
   uint32_t rtt_;

@@ -11,6 +11,10 @@
 
 #ifndef FEC_TEST_TEST_TP_H
 #define FEC_TEST_TEST_TP_H
+
+#define TPYE_RTT 12
+#define TPYE_TRANSPORT_PACKET 1
+#define TPYE_TRANSPORT_INFO 2
 namespace transportdemo {
   static constexpr std::size_t UDP_PACKET_MAX_BYTES = 1400;
 
@@ -37,6 +41,7 @@ namespace transportdemo {
     uint16_t type; // 2B
     uint32_t length; // 4B
     uint16_t padding; // 2B
+
     int16_t fec_k; // 2B
     int16_t fec_n; // 2B
     int16_t fec_index; //2B
@@ -57,6 +62,7 @@ namespace transportdemo {
     uint16_t get_last_packet_size() const { return ntohs(last_packet_size); }
     uint16_t get_is_last_packet() const { return ntohs(is_last_packet); }
   };
+  
   struct TESTFECPayload {
     TESTFECHeader header;
     uint8_t      buf[1300];
@@ -99,7 +105,7 @@ namespace transportdemo {
     std::size_t capacity() const { return capacity_; }
     UDPEndpoint &mutable_endpoint() { return endpoint_; }
     std::size_t length() const { return length_; }
-    void mod_length(std::size_t l) { length_ = l; }
+    void set_length(std::size_t l) { length_ = l; }
   public:
     const std::size_t capacity_;
     uint8_t           *buf_;

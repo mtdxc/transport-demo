@@ -225,8 +225,7 @@ std::vector<std::unique_ptr<RtpPacketToSend>> UlpfecGenerator::GetFecPackets() {
     // Primary RED header with F bit unset.
     // See https://tools.ietf.org/html/rfc2198#section-3
     payload_buffer[0] = ulpfec_payload_type_;  // RED header.
-    memcpy(&payload_buffer[1], fec_packet->data.data(),
-           fec_packet->data.size());
+    memcpy(&payload_buffer[1], fec_packet->data.data(), fec_packet->data.size());
     total_fec_size_bytes += red_packet->size();
     red_packet->set_packet_type(webrtc::RtpPacketMediaType::kForwardErrorCorrection);
     red_packet->set_allow_retransmission(false);

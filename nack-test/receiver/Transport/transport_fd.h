@@ -26,7 +26,7 @@ namespace transportdemo {
   typedef asio::steady_timer     DeadlineTimer;
   typedef asio::error_code       ErrorCode;
   typedef asio::ip::udp::socket    UDPSocket;
-  typedef std::shared_ptr<UDPSocket>      UDPSocketPrt;
+  typedef std::shared_ptr<UDPSocket>      UDPSocketPtr;
 } // transport-demo
 
 #endif //NACK_TEST_TRANSPORT_FD_H

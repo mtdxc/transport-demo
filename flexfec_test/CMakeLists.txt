@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 project(flexfec_test)
 
 set(CMAKE_CXX_STANDARD 14)
-
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(WEBRTC_DIR /libwebrtc/libwebrtc)
 set(WEBRTC_MODULES ${WEBRTC_DIR}/modules)
 

@@ -10,9 +10,6 @@
 #include "pack.h"
 #include "test_tp.h"
 
-#define TPYE_RTT 12
-#define TPYE_TRANSPORT_PACKET 1
-#define TPYE_TRANSPORT_INFO 2
 
 namespace transportdemo {
   static constexpr std::size_t RTP_HEADER_SIZE_BYTES  = 8;
@@ -35,7 +32,7 @@ namespace transportdemo {
     TESTTPPayload *payload = nullptr;
     payload = reinterpret_cast<TESTTPPayload *>(packet->mutable_buffer() + RTP_HEADER_SIZE_BYTES);
     memset(payload->buf, 0x0, sizeof(uint8_t));
-    packet->mod_length(RTP_HEADER_SIZE_BYTES + 1300);
+    packet->set_length(RTP_HEADER_SIZE_BYTES + 1300);
 
     return packet;
   }
@@ -45,7 +42,6 @@ namespace transportdemo {
 
     TESTTCPHeader *header = reinterpret_cast<TESTTCPHeader *>(packet->mutable_buffer());
     header->type = htons(TPYE_TRANSPORT_INFO);
-
 
     TESTTCPPayload *payload = reinterpret_cast<TESTTCPPayload *>(packet->mutable_buffer() + RTCP_HEADER_SIZE_BYTES);
 
@@ -72,10 +68,10 @@ namespace transportdemo {
         break;
       }
     }
-    uint16_t length = static_cast<uint16_t>(RTCP_HEADER_SIZE_BYTES + NACK_ITEM_BYTES * nack_item_count);
 
+    uint16_t length = static_cast<uint16_t>(RTCP_HEADER_SIZE_BYTES + NACK_ITEM_BYTES * nack_item_count);
     header->length = htonl(length);
-    packet->mod_length(length);
+    packet->set_length(length);
 
     return packet;
   }
@@ -83,15 +79,13 @@ namespace transportdemo {
   bool Pack::unpacking_nack(TESTTPPacketPtr pkt, std::vector<uint16_t> &sequence_vector) {
     TESTTCPHeader *header = reinterpret_cast<TESTTCPHeader *>(pkt->mutable_buffer());
     auto len = header->get_length();
-
     // at least one nack item.
     if (len < RTCP_HEADER_SIZE_BYTES) {
       return false;
     }
+
     std::size_t nack_item = (len - (RTCP_HEADER_SIZE_BYTES)) / NACK_ITEM_BYTES;
-
     TESTTCPPayload *payload = reinterpret_cast<TESTTCPPayload *>(pkt->mutable_buffer() + RTCP_HEADER_SIZE_BYTES);
-
     for (std::size_t i = 0; i < nack_item; i++) {
       const FCI *fci = payload->nack.fci + i;
       uint16_t pid = fci->get_pid();
@@ -116,10 +110,10 @@ namespace transportdemo {
 
     TESTTCPPayload *payload = reinterpret_cast<TESTTCPPayload *>(packet->mutable_buffer() + RTCP_HEADER_SIZE_BYTES);
     payload->rtt.num = num;
-    uint16_t length = static_cast<uint16_t>(RTCP_HEADER_SIZE_BYTES + RTT_PAYLOAD_BYTES);
 
+    uint16_t length = static_cast<uint16_t>(RTCP_HEADER_SIZE_BYTES + RTT_PAYLOAD_BYTES);
     header->length = htonl(length);
-    packet->mod_length(length);
+    packet->set_length(length);
 
     return packet;
   }

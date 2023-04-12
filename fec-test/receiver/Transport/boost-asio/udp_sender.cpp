@@ -47,11 +47,11 @@ namespace transportdemo {
   , timer_(ios_, std::chrono::milliseconds(static_cast<int64_t>(timer_ms_))){
     socket_ = std::make_shared<UDPSocket>(ios_);
     nackgen_ = std::make_shared<NackGenerator>();
-    asio::ip::address send_addr = asio::ip::address::from_string("127.0.0.1");
-    UDPEndpoint send_endpoint(send_addr,8000);
-    send_ep_ = send_endpoint;
+    fec_gen_ = std::make_shared<FECGenerator>(FEC_K, FEC_N, FEC_SIZE);
 
-    fec_gen_= std::make_shared<FECGenerator>(FEC_K, FEC_N, FEC_SIZE);
+    asio::ip::address send_addr = asio::ip::address::from_string("127.0.0.1");
+    send_ep_ = UDPEndpoint(send_addr, 8000);
+
   }
 
   void UDPSender::run() {
@@ -69,7 +69,6 @@ namespace transportdemo {
     } catch (std::exception &e) {
       std::cout << "UDPSender run err" << std::endl;
     }
-
   }
 
   void UDPSender::send_packet(TESTTPPacketPtr pkt, const UDPEndpoint &ep) {
@@ -80,67 +79,57 @@ namespace transportdemo {
   void UDPSender::do_receive_from() {
     TESTTPPacketPtr pkt = std::make_shared<TESTTPPacket>();
     socket_->async_receive_from(asio::buffer(pkt->mutable_buffer(), pkt->capacity()),
-                                        pkt->mutable_endpoint(),
-                                        std::bind(&UDPSender::handle_receive_from,
-                                                  this,
-                                                  pkt,
-                                                  std::placeholders::_1,
-                                                  std::placeholders::_2));
+        pkt->mutable_endpoint(),
+        std::bind(&UDPSender::handle_receive_from, this, pkt, std::placeholders::_1, std::placeholders::_2));
   }
 
   void UDPSender::handle_receive_from(TESTTPPacketPtr pkt, const ErrorCode &ec, std::size_t bytes_recvd) {
     send_ep_ = pkt->mutable_endpoint();
-    pkt->mod_length(bytes_recvd);
-
+    pkt->set_length(bytes_recvd);
 
     // 解析类型
     TESTTPHeader *header = reinterpret_cast<TESTTPHeader *>(pkt->mutable_buffer());
     
-    // nack
-    if (header->get_type() == 12) {
-      TESTTCPPayload *payload = reinterpret_cast<TESTTCPPayload *>(pkt->mutable_buffer() + 8);
-      auto num = payload->rtt.num;
-      auto iter = rtt_count_map_.find(num);
-      if (iter != rtt_count_map_.end()) {
-        uint32_t recv_time = (uint32_t)nackgen_->GetCurrentStamp64();
-        rtt_ = ((recv_time - iter->second) + rtt_)/2;
-        rtt_count_map_.erase(iter);
-      }
-      do_receive_from();
-      return;
+    switch (header->get_type()) {
+    case TPYE_RTT: {
+        TESTTCPPayload *payload = reinterpret_cast<TESTTCPPayload *>(pkt->mutable_buffer() + 8);
+        auto num = payload->rtt.num;
+        auto iter = rtt_count_map_.find(num);
+        if (iter != rtt_count_map_.end()) {
+            uint32_t recv_time = (uint32_t)nackgen_->GetCurrentStamp64();
+            rtt_ = ((recv_time - iter->second) + rtt_) / 2;
+            rtt_count_map_.erase(iter);
+        }
+        break;
     }
-    
-    // fec
-    if (header->get_type() == 13) {
+    case 13: { // fec
 //      std::cout << bytes_to_hex(pkt->mutable_buffer(), pkt->length(), 8) << std::endl;
 
-      TESTFECPayload *payload = reinterpret_cast<TESTFECPayload *>(pkt->mutable_buffer());
-      TESTFECHeader *header_fec = reinterpret_cast<TESTFECHeader *>(pkt->mutable_buffer());
-//      collect_packet(header_fec, payload->buf, header_fec->get_length());
+        TESTFECPayload *payload = reinterpret_cast<TESTFECPayload *>(pkt->mutable_buffer());
+        TESTFECHeader *header_fec = reinterpret_cast<TESTFECHeader *>(pkt->mutable_buffer());
+        // collect_packet(header_fec, payload->buf, header_fec->get_length());
 
-      // 接到fec数据解码
-      fec_gen_->Decode(header_fec, payload->buf, std::bind(&UDPSender::fec_dencode_callback, this,
-                                                 std::placeholders::_1,
-                                                 std::placeholders::_2,
-                                                 std::placeholders::_3,
-                                                 std::placeholders::_4,
-                                                 std::placeholders::_5,
-                                                 std::placeholders::_6));
-
-      do_receive_from();
-      return;
+        // 接到fec数据解码
+        fec_gen_->Decode(header_fec, payload->buf, std::bind(&UDPSender::fec_dencode_callback, this,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3,
+            std::placeholders::_4,
+            std::placeholders::_5,
+            std::placeholders::_6));
+        break;
+    }
+    default:
+        nackgen_->ReceivePacket(pkt);
+        break;
     }
 
-    nackgen_->ReceivePacket(pkt);
-
     do_receive_from();
-
   }
 
   void UDPSender::do_timer(bool first) {
     if (!first) {
-      timer_.expires_at(timer_.expires_at() +
-      std::chrono::milliseconds(static_cast<int64_t>(timer_ms_)));
+      timer_.expires_at(timer_.expires_at() + std::chrono::milliseconds(static_cast<int64_t>(timer_ms_)));
     }
     timer_.async_wait(std::bind(&UDPSender::handle_crude_timer, this, std::placeholders::_1));
   }
@@ -169,14 +158,12 @@ namespace transportdemo {
     do_timer(false);
   }
 
-  void UDPSender::fec_dencode_callback(uint64_t groupId, int16_t k, int16_t n, int16_t index, uint8_t *data,
-                           size_t size) {
+  void UDPSender::fec_dencode_callback(uint64_t groupId, int16_t k, int16_t n, int16_t index, 
+      uint8_t *data, size_t size) {
 
-
-    TESTTPPacketPtr packet;
-    packet = std::make_shared<TESTTPPacket>();
-    TESTTPHeader *header_data = reinterpret_cast<TESTTPHeader *>(data);
+    TESTTPPacketPtr packet = std::make_shared<TESTTPPacket>();
     TESTTPHeader *header_pkt = reinterpret_cast<TESTTPHeader *>(packet->mutable_buffer());
+    TESTTPHeader *header_data = reinterpret_cast<TESTTPHeader *>(data);
     header_pkt->type = header_data->type;
     header_pkt->sequence = header_data->sequence;
     header_pkt->timestamp = header_data->timestamp;
@@ -185,9 +172,7 @@ namespace transportdemo {
     TESTTPPayload *payload_pkt  = reinterpret_cast<TESTTPPayload *>(packet->mutable_buffer());
     memcpy(payload_pkt->buf, payload_data->buf, size);
 
-    packet->mod_length(8 + 1300);
-
-
+    packet->set_length(8 + 1300);
 
 //    std::cout << bytes_to_hex(data, size, 8) << std::endl;
     std::cout << "fec_encode_callback:"<< header_pkt->get_sequence() << std::endl;

@@ -159,7 +159,8 @@ namespace transportdemo {
       ++raw_packet_count;
       ++packet_count;
     }
-    /*for(int i = 0; i < fec_k; ++i){
+    /*
+    for(int i = 0; i < fec_k; ++i) {
         if(used_marks[i]){
             continue;
         }

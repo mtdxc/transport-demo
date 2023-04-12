@@ -176,6 +176,7 @@ static gf inverse[GF_SIZE + 1];  /* inverse of field elem.		*/
  * without a slow divide.
  */
 static inline gf
+
 modnn(int x) {
   while (x >= GF_SIZE) {
     x -= GF_SIZE;
@@ -346,7 +347,7 @@ static void
 addmul1(gf *dst1, gf *src1, gf c, int sz) {
   USE_GF_MULC;
   register gf *dst = dst1, *src = src1;
-  gf *lim = &dst[sz - UNROLL + 1];
+  gf * lim = &dst[sz - UNROLL + 1];
 
   GF_MULC0(c);
 
@@ -388,8 +389,8 @@ matmul(gf *a, gf *b, gf *c, int n, int k, int m) {
 
   for (row = 0; row < n; row++) {
     for (col = 0; col < m; col++) {
-      gf *pa = &a[row * k];
-      gf *pb = &b[col];
+      gf * pa = &a[row * k];
+      gf * pb = &b[col];
       gf acc = 0;
       for (i = 0; i < k; i++, pa++, pb += m)
         acc ^= gf_mul(*pa, *pb);
@@ -435,8 +436,8 @@ invert_mat(gf *src, int k) {
   int *indxc = my_malloc(k * sizeof(int), "indxc");
   int *indxr = my_malloc(k * sizeof(int), "indxr");
   int *ipiv = my_malloc(k * sizeof(int), "ipiv");
-  gf *id_row = NEW_GF_MATRIX(1, k);
-  gf *temp_row = NEW_GF_MATRIX(1, k);
+  gf * id_row = NEW_GF_MATRIX(1, k);
+  gf * temp_row = NEW_GF_MATRIX(1, k);
 
   bzero(id_row, k * sizeof(gf));
   DEB(pivloops = 0; pivswaps = 0; /* diagnostic */ )
@@ -447,7 +448,7 @@ invert_mat(gf *src, int k) {
     ipiv[i] = 0;
 
   for (col = 0; col < k; col++) {
-    gf *pivot_row;
+    gf * pivot_row;
     /*
      * Zeroing column 'col', look for a non-zero element.
      * First try on the diagonal, if it fails, look elsewhere.
@@ -565,7 +566,7 @@ invert_mat(gf *src, int k) {
 int
 invert_vdm(gf *src, int k) {
   int i, j, row, col;
-  gf *b, *c, *p;
+  gf * b, *c, *p;
   gf t, xx;
 
   if (k == 1)  /* degenerate case, matrix must be p^0 = 1 */
@@ -664,7 +665,7 @@ fec_free(struct fec_parms *p) {
 struct fec_parms *
 fec_new(int k, int n) {
   int row, col;
-  gf *p, *tmp_m;
+  gf * p, *tmp_m;
 
   struct fec_parms *retval;
 
@@ -725,7 +726,7 @@ fec_new(int k, int n) {
 void
 fec_encode(struct fec_parms *code, gf *src[], gf *fec, int index, int sz) {
   int i, k = code->k;
-  gf *p;
+  gf * p;
 
   if (GF_BITS > 8)
     sz /= 2;
@@ -787,7 +788,7 @@ shuffle(gf *pkt[], int index[], int k) {
 static gf *
 build_decode_matrix(struct fec_parms *code, gf *pkt[], int index[]) {
   int i, k = code->k;
-  gf *p, *matrix = NEW_GF_MATRIX(k, k);
+  gf * p, *matrix = NEW_GF_MATRIX(k, k);
 
   TICK(ticks[9]);
   for (i = 0, p = matrix; i < k; i++, p += k) {
@@ -828,8 +829,8 @@ build_decode_matrix(struct fec_parms *code, gf *pkt[], int index[]) {
  */
 int
 fec_decode(struct fec_parms *code, gf *pkt[], int index[], int sz) {
-  gf *m_dec;
-  gf **new_pkt;
+  gf * m_dec;
+  gf * *new_pkt;
   int row, col, k = code->k;
 
   if (GF_BITS > 8)
