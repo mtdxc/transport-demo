@@ -192,7 +192,7 @@ void DeleteFecEncoder (fecEncoder *f)
   free (f);
 }
 
-fecDecoder *NewFecDecoder (void *userData, void (*userReceive)(
+fecDecoder *NewFecDecoder(void *userData, void (*userReceive)(
   void *userData, __int64_t position, fecPayload *buf, int len))
 {
   fecDecoder *f = malloc (sizeof (*f));

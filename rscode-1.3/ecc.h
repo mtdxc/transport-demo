@@ -71,10 +71,10 @@ extern int synBytes[MAXDEG];
 extern int DEBUG;
 
 /* Reed Solomon encode/decode routines */
-void initialize_ecc (void);
-int check_syndrome (void);
-void decode_data (unsigned char data[], int nbytes);
-void encode_data (unsigned char msg[], int nbytes, unsigned char dst[]);
+void initialize_ecc(void);
+int check_syndrome(void);
+void decode_data(unsigned char data[], int nbytes);
+void encode_data(unsigned char msg[], int nbytes, unsigned char dst[]);
 
 /* CRC-CCITT checksum generator */
 BIT16 crc_ccitt(unsigned char *msg, int len);
@@ -83,13 +83,13 @@ BIT16 crc_ccitt(unsigned char *msg, int len);
 extern int gexp[];
 extern int glog[];
 
-void init_galois_tables (void);
+void init_galois_tables(void);
 int ginv(int elt); 
 int gmult(int a, int b);
 
 
 /* Error location routines */
-int correct_errors_erasures (unsigned char codeword[], int csize,int nerasures, int erasures[]);
+int correct_errors_erasures(unsigned char codeword[], int csize, int nerasures, int erasures[]);
 
 /* polynomial arithmetic */
 void add_polys(int dst[], int src[]) ;

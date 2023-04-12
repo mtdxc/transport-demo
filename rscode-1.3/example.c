@@ -46,17 +46,14 @@
 #include <stdlib.h>
 #include "ecc.h"
  
-unsigned char msg[] = "Nervously I loaded the twin ducks aboard the revolving pl\
-atform.";
+unsigned char msg[] = "Nervously I loaded the twin ducks aboard the revolving platform.";
 unsigned char codeword[256];
  
-/* Some debugging routines to introduce errors or erasures
-   into a codeword. 
-   */
+/* Some debugging routines to introduce errors or erasures into a codeword. */
 
 /* Introduce a byte error at LOC */
 void
-byte_err (int err, int loc, unsigned char *dst)
+byte_err(int err, int loc, unsigned char *dst)
 {
   printf("Adding Error at loc %d, data %#x\n", loc, dst[loc-1]);
   dst[loc-1] ^= err;
@@ -66,7 +63,7 @@ byte_err (int err, int loc, unsigned char *dst)
    labeled starting at 1, not 0), and the codeword.
 */
 void
-byte_erasure (int loc, unsigned char dst[], int cwsize, int erasures[]) 
+byte_erasure(int loc, unsigned char dst[], int cwsize, int erasures[]) 
 {
   printf("Erasure at loc %d, data %#x\n", loc, dst[loc-1]);
   dst[loc-1] = 0;
@@ -74,7 +71,7 @@ byte_erasure (int loc, unsigned char dst[], int cwsize, int erasures[])
 
 
 int
-main (int argc, char *argv[])
+main(int argc, char *argv[])
 {
  
   int erasures[16];
@@ -82,7 +79,7 @@ main (int argc, char *argv[])
 
   /* Initialization the ECC library */
  
-  initialize_ecc ();
+  initialize_ecc();
  
   /* ************** */
  
@@ -114,8 +111,8 @@ main (int argc, char *argv[])
   decode_data(codeword, ML);
 
   /* check if syndrome is all zeros */
-  if (check_syndrome () != 0) {
-    correct_errors_erasures (codeword, 
+  if (check_syndrome() != 0) {
+    correct_errors_erasures(codeword, 
 			     ML,
 			     nerasures, 
 			     erasures);

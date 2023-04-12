@@ -28,14 +28,14 @@ typedef struct {
   fecEncDec e;
 } fecEncoder;
 
-fecEncoder *NewFecEncoder (void *userData,
+fecEncoder *NewFecEncoder(void *userData,
   size_t (*userSend)(void *buf, size_t size, size_t count, void *userData),
   char **errorMessage,
   int s, int n, int k, int w, int g, int b);
 
-void FecEncode (fecPayload *buf, fecEncoder *f);
+void FecEncode(fecPayload *buf, fecEncoder *f);
 
-void DeleteFecEncoder (fecEncoder *f);
+void DeleteFecEncoder(fecEncoder *f);
 
 //-----------------------------------------
 
@@ -44,22 +44,20 @@ typedef struct {
   char *errorMessage;
   // The rest is private
   void *userData;
-  void (*userReceive)(void *userData, __int64_t position, fecPayload *buf,
-    int len);
+  void (*userReceive)(void *userData, __int64_t position, fecPayload *buf, int len);
   fecEncDec *e; // The redudant data is at e + 1.
   int nmissed;
   fecPayload *missed; // Keeps track of both payload and redundant packets.
 } fecDecoder;
 
-fecDecoder *NewFecDecoder (void *userData, void (*userReceive)(
+fecDecoder *NewFecDecoder(void *userData, void (*userReceive)(
   void *userData, __int64_t position, fecPayload *buf, int len));
 
-size_t FecDecode (void *buf, size_t size, size_t count,
-  fecDecoder *f);
+size_t FecDecode(void *buf, size_t size, size_t count, fecDecoder *f);
 
-void FlushFecDecoder (fecDecoder *f);
+void FlushFecDecoder(fecDecoder *f);
 
-void DeleteFecDecoder (fecDecoder *f);
+void DeleteFecDecoder(fecDecoder *f);
 
 #ifdef __cplusplus
 }
