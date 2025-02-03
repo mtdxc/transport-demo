@@ -26,7 +26,6 @@
 
 #endif  // defined(WEBRTC_POSIX)
 
-#include "rtc_base/synchronization/rw_lock_wrapper.h"
 #include "rtc_base/time_utils.h"
 
 namespace webrtc {
@@ -235,7 +234,7 @@ Clock* Clock::GetRealTimeClock() {
 #endif
   return clock;
 }
-
+#if HAS_SIMULATE_CLOCK
 SimulatedClock::SimulatedClock(int64_t initial_time_us)
     : SimulatedClock(Timestamp::us(initial_time_us)) {}
 
@@ -273,5 +272,5 @@ void SimulatedClock::AdvanceTime(TimeDelta delta) {
   WriteLockScoped synchronize(*lock_);
   time_ += delta;
 }
-
+#endif
 }  // namespace webrtc

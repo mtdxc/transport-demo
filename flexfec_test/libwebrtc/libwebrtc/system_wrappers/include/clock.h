@@ -16,7 +16,6 @@
 #include <memory>
 
 #include "api/units/timestamp.h"
-#include "rtc_base/synchronization/rw_lock_wrapper.h"
 #include "system_wrappers/include/ntp_time.h"
 
 namespace webrtc {
@@ -52,7 +51,8 @@ class Clock {
   // Returns an instance of the real-time system clock implementation.
   static Clock* GetRealTimeClock();
 };
-
+#if HAS_SIMULATE_CLOCK
+#include "rtc_base/synchronization/rw_lock_wrapper.h"
 class SimulatedClock : public Clock {
  public:
   explicit SimulatedClock(int64_t initial_time_us);
@@ -80,7 +80,7 @@ class SimulatedClock : public Clock {
   Timestamp time_;
   std::unique_ptr<RWLockWrapper> lock_;
 };
-
+#endif
 }  // namespace webrtc
 
 #endif  // SYSTEM_WRAPPERS_INCLUDE_CLOCK_H_

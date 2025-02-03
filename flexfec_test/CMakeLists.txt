@@ -31,15 +31,12 @@ aux_source_directory(libwebrtc/libwebrtc/system_wrappers/source  SYSTEM_WRAPPERS
 
 set(RTC_BASE_SRC
         libwebrtc/libwebrtc/rtc_base/strings/string_builder.cc
-        libwebrtc/libwebrtc/rtc_base/synchronization/rw_lock_wrapper.cc
         libwebrtc/libwebrtc/rtc_base/synchronization/sequence_checker.cc
 )
 IF(WIN32)
     ADD_DEFINITIONS(-DWEBRTC_WIN -DNOMINMAX)
-    list(APPEND RTC_BASE_SRC libwebrtc/libwebrtc/rtc_base/synchronization/rw_lock_win.cc)
 ELSE()
     ADD_DEFINITIONS(-DWEBRTC_POSIX)
-    list(APPEND RTC_BASE_SRC libwebrtc/libwebrtc/rtc_base/synchronization/rw_lock_posix.cc)
 ENDIF()
 add_subdirectory(libwebrtc/deps/abseil-cpp/abseil-cpp)
 
@@ -59,7 +56,6 @@ add_executable(${PROJECT_NAME}
         libwebrtc/libwebrtc/api/transport/network_types.cc
         libwebrtc/libwebrtc/api/task_queue/task_queue_base.cc
         libwebrtc/libwebrtc/api/video/video_content_type.cc
-        libwebrtc/libwebrtc/rtc_base/race_checker.cc
         )
 
 target_link_libraries(${PROJECT_NAME} 
