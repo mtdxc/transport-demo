@@ -9,8 +9,9 @@
  */
 #ifndef RTC_BASE_SYNCHRONIZATION_SEQUENCE_CHECKER_H_
 #define RTC_BASE_SYNCHRONIZATION_SEQUENCE_CHECKER_H_
-
+#ifdef HAS_TASK_QUEUE
 #include "api/task_queue/task_queue_base.h"
+#endif
 #include "rtc_base/critical_section.h"
 #include "rtc_base/platform_thread_types.h"
 #include "rtc_base/thread_annotations.h"
@@ -38,7 +39,9 @@ class SequenceCheckerImpl {
   // These are mutable so that IsCurrent can set them.
   mutable bool attached_ RTC_GUARDED_BY(lock_);
   mutable rtc::PlatformThreadRef valid_thread_ RTC_GUARDED_BY(lock_);
+#ifdef HAS_TASK_QUEUE
   mutable const TaskQueueBase* valid_queue_ RTC_GUARDED_BY(lock_);
+#endif
   mutable const void* valid_system_queue_ RTC_GUARDED_BY(lock_);
 };
 

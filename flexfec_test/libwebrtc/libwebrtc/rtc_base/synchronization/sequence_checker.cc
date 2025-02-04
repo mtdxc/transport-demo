@@ -29,26 +29,34 @@ const void* GetSystemQueueRef() {
 SequenceCheckerImpl::SequenceCheckerImpl()
     : attached_(true),
       valid_thread_(rtc::CurrentThreadRef()),
+#ifdef HAS_TASK_QUEUE
       valid_queue_(TaskQueueBase::Current()),
+#endif
       valid_system_queue_(GetSystemQueueRef()) {}
 
 SequenceCheckerImpl::~SequenceCheckerImpl() = default;
 
 bool SequenceCheckerImpl::IsCurrent() const {
+#ifdef HAS_TASK_QUEUE
   const TaskQueueBase* const current_queue = TaskQueueBase::Current();
+#endif
   const rtc::PlatformThreadRef current_thread = rtc::CurrentThreadRef();
   const void* const current_system_queue = GetSystemQueueRef();
   rtc::CritScope scoped_lock(&lock_);
   if (!attached_) {  // Previously detached.
     attached_ = true;
     valid_thread_ = current_thread;
+#ifdef HAS_TASK_QUEUE
     valid_queue_ = current_queue;
+#endif
     valid_system_queue_ = current_system_queue;
     return true;
   }
+#ifdef HAS_TASK_QUEUE
   if (valid_queue_ || current_queue) {
     return valid_queue_ == current_queue;
   }
+#endif
   if (valid_system_queue_ && valid_system_queue_ == current_system_queue) {
     return true;
   }
