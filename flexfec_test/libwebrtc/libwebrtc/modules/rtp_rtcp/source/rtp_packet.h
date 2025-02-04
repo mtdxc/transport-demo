@@ -67,6 +67,9 @@ class RtpPacket {
   rtc::ArrayView<const uint8_t> payload() const {
     return rtc::MakeArrayView(data() + payload_offset_, payload_size_);
   }
+  rtc::CopyOnWriteBuffer PayloadBuffer() const {
+    return buffer_.Slice(payload_offset_, payload_size_);
+  }
 
   // Buffer.
   rtc::CopyOnWriteBuffer Buffer() const { return buffer_; }
@@ -89,9 +92,9 @@ class RtpPacket {
   void SetTimestamp(uint32_t timestamp);
   void SetSsrc(uint32_t ssrc);
 
-  // Copies the buffer with zero-ed mutable extensions,
+  // Fills with zeroes mutable extensions,
   // which are modified after FEC protection is generated.
-  void CopyAndZeroMutableExtensions(rtc::ArrayView<uint8_t> buffer) const;
+  void ZeroMutableExtensions();
 
   // Removes extension of given |type|, returns false is extension was not
   // registered in packet's extension map or not present in the packet. Only

@@ -133,8 +133,7 @@ void UlpfecGenerator::AddPacketAndGenerateFec(const RtpPacketToSend& packet) {
   if (media_packets_.size() < kUlpfecMaxMediaPackets) {
     // Our packet masks can only protect up to |kUlpfecMaxMediaPackets| packets.
     auto fec_packet = std::make_unique<ForwardErrorCorrection::Packet>();
-    fec_packet->length = packet.payload_size() + packet.headers_size();
-    memcpy(fec_packet->data, packet.data(), fec_packet->length);
+    fec_packet->data = packet.Buffer();
     media_packets_.push_back(std::move(fec_packet));
 
     // Keep a copy of the last RTP packet, so we can copy the RTP header
@@ -222,11 +221,12 @@ std::vector<std::unique_ptr<RtpPacketToSend>> UlpfecGenerator::GetFecPackets() {
     red_packet->SetPayloadType(red_payload_type_);
     red_packet->SetMarker(false);
     uint8_t* payload_buffer = red_packet->SetPayloadSize(
-        kRedForFecHeaderLength + fec_packet->length);
+        kRedForFecHeaderLength + fec_packet->data.size());
     // Primary RED header with F bit unset.
     // See https://tools.ietf.org/html/rfc2198#section-3
     payload_buffer[0] = ulpfec_payload_type_;  // RED header.
-    memcpy(&payload_buffer[1], fec_packet->data, fec_packet->length);
+    memcpy(&payload_buffer[1], fec_packet->data.data(),
+           fec_packet->data.size());
     total_fec_size_bytes += red_packet->size();
     red_packet->set_packet_type(RtpPacketMediaType::kForwardErrorCorrection);
     red_packet->set_allow_retransmission(false);

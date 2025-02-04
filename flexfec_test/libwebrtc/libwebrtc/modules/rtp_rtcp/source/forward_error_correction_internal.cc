@@ -354,7 +354,7 @@ int SetProtectionAllocation(int num_media_packets,
 
 // Protection Mode 2 may be extended for a sort of sliding protection
 // (i.e., vary the number/density of "1s" across columns) across packets.
-// 使用非均衡保护（默认是关闭的）
+
 void UnequalProtectionMask(int num_media_packets,
                            int num_fec_packets,
                            int num_imp_packets,
@@ -362,7 +362,7 @@ void UnequalProtectionMask(int num_media_packets,
                            uint8_t* packet_mask,
                            PacketMaskTable* mask_table) {
   // Set Protection type and allocation
-  // TODO(marpan): mytest/update for best mode and some combinations thereof.
+  // TODO(marpan): test/update for best mode and some combinations thereof.
 
   ProtectionMode mode = kModeOverlap;
   int num_fec_for_imp_packets = 0;
@@ -456,12 +456,11 @@ void GeneratePacketMasks(int num_media_packets,
   RTC_DCHECK_LE(num_fec_packets, num_media_packets);
   RTC_DCHECK_LE(num_imp_packets, num_media_packets);
   RTC_DCHECK_GE(num_imp_packets, 0);
-  // 根据帧大小进行mask size分配，分两种：2bit和6bit。
+
   const int num_mask_bytes = PacketMaskSize(num_media_packets);
 
   // Equal-protection for these cases.
   if (!use_unequal_protection || num_imp_packets == 0) {
-    // 默认没使用非均衡保护，则根据mask表保护数据
     // Retrieve corresponding mask table directly:for equal-protection case.
     // Mask = (k,n-k), with protection factor = (n-k)/k,
     // where k = num_media_packets, n=total#packets, (n-k)=num_fec_packets.
@@ -469,7 +468,6 @@ void GeneratePacketMasks(int num_media_packets,
         mask_table->LookUp(num_media_packets, num_fec_packets);
     memcpy(packet_mask, &mask[0], mask.size());
   } else {  // UEP case
-    // 使用了非均衡保护则需要着重保护重要包
     UnequalProtectionMask(num_media_packets, num_fec_packets, num_imp_packets,
                           num_mask_bytes, packet_mask, mask_table);
   }  // End of UEP modification
@@ -477,7 +475,6 @@ void GeneratePacketMasks(int num_media_packets,
 
 size_t PacketMaskSize(size_t num_sequence_numbers) {
   RTC_DCHECK_LE(num_sequence_numbers, 8 * kUlpfecPacketMaskSizeLBitSet);
-  // 一旦超过16
   if (num_sequence_numbers > 8 * kUlpfecPacketMaskSizeLBitClear) {
     return kUlpfecPacketMaskSizeLBitSet;
   }

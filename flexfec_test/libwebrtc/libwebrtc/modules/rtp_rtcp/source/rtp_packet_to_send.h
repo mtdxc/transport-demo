@@ -44,8 +44,10 @@ class RtpPacketToSend : public RtpPacket {
 
   void set_capture_time_ms(int64_t time) { capture_time_ms_ = time; }
 
-  void set_packet_type(Type type) { packet_type_ = type; }
-  absl::optional<Type> packet_type() const { return packet_type_; }
+  void set_packet_type(RtpPacketMediaType type) { packet_type_ = type; }
+  absl::optional<RtpPacketMediaType> packet_type() const {
+    return packet_type_;
+  }
 
   // If this is a retransmission, indicates the sequence number of the original
   // media packet that this packet represents. If RTX is used this will likely
