@@ -18,6 +18,7 @@
 #include "absl/types/optional.h"
 #include "api/array_view.h"
 #include "api/video/video_timing.h"
+#include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/rtp_header_extensions.h"
 #include "modules/rtp_rtcp/source/rtp_packet.h"
 
@@ -25,13 +26,7 @@ namespace webrtc {
 // Class to hold rtp packet with metadata for sender side.
 class RtpPacketToSend : public RtpPacket {
  public:
-  enum class Type {
-    kAudio,                   // Audio media packets.
-    kVideo,                   // Video media packets.
-    kRetransmission,          // RTX (usually) packets send as response to NACK.
-    kForwardErrorCorrection,  // FEC packets.
-    kPadding                  // RTX or plain padding sent to maintain BWE.
-  };
+  using Type = RtpPacketMediaType;
 
   explicit RtpPacketToSend(const ExtensionManager* extensions);
   RtpPacketToSend(const ExtensionManager* extensions, size_t capacity);

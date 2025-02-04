@@ -569,13 +569,13 @@ bool ForwardErrorCorrection::StartPacketRecovery(
 bool ForwardErrorCorrection::FinishPacketRecovery(
     const ReceivedFecPacket& fec_packet,
     RecoveredPacket* recovered_packet) {
+  uint8_t* data = recovered_packet->pkt->data;
   // Set the RTP version to 2.
-  recovered_packet->pkt->data[0] |= 0x80;  // Set the 1st bit.
-  recovered_packet->pkt->data[0] &= 0xbf;  // Clear the 2nd bit.
+  data[0] |= 0x80;  // Set the 1st bit.
+  data[0] &= 0xbf;  // Clear the 2nd bit.
   // Recover the packet length, from temporary location.
   recovered_packet->pkt->length =
-      ByteReader<uint16_t>::ReadBigEndian(&recovered_packet->pkt->data[2]) +
-      kRtpHeaderSize;
+      ByteReader<uint16_t>::ReadBigEndian(&data[2]) + kRtpHeaderSize;
   if (recovered_packet->pkt->length >
       sizeof(recovered_packet->pkt->data) - kRtpHeaderSize) {
 //    RTC_LOG(LS_WARNING) << "The recovered packet had a length larger than a "
@@ -583,11 +583,9 @@ bool ForwardErrorCorrection::FinishPacketRecovery(
     return false;
   }
   // Set the SN field.
-  ByteWriter<uint16_t>::WriteBigEndian(&recovered_packet->pkt->data[2],
-                                       recovered_packet->seq_num);
+  ByteWriter<uint16_t>::WriteBigEndian(&data[2], recovered_packet->seq_num);
   // Set the SSRC field.
-  ByteWriter<uint32_t>::WriteBigEndian(&recovered_packet->pkt->data[8],
-                                       fec_packet.protected_ssrc);
+  ByteWriter<uint32_t>::WriteBigEndian(&data[8], fec_packet.protected_ssrc);
   recovered_packet->ssrc = fec_packet.protected_ssrc;
   return true;
 }

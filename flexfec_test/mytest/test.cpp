@@ -116,11 +116,7 @@ namespace webrtc {
       pkt.SetPayloadSize(1000);
       if (i%48 == 0)
         pkt.SetMarker(true);
-#if USE_RTC85
-      sender_->AddPacketAndGenerateFec(pkt);
-#else
       sender_->AddRtpPacketAndGenerateFec(pkt);
-#endif
       auto vec_s = sender_->GetFecPackets();
       if (vec_s.size()) {
         for (auto iter = vec_s.begin(); iter != vec_s.end(); iter++) {
