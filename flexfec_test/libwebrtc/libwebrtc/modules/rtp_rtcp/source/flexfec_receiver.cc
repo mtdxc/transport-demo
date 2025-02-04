@@ -15,7 +15,7 @@
 #include "api/array_view.h"
 #include "api/scoped_refptr.h"
 #include "rtc_base/checks.h"
-//#include "rtc_base/logging.h"
+#include "rtc_base/logging.h"
 
 namespace webrtc {
 
@@ -67,12 +67,12 @@ void FlexfecReceiver::OnRtpPacket(const RtpPacketReceived& packet) {
   // recovered packets by RTX from recovered packets by FlexFEC.
   if (packet.recovered())
     return;
-  // æŠŠæŽ¥åˆ°çš„åŒ…è¿›è¡Œè®°å½•
+  // °Ñ½Óµ½µÄ°ü½øÐÐ¼ÇÂ¼
   std::unique_ptr<ForwardErrorCorrection::ReceivedPacket> received_packet =
       AddReceivedPacket(packet);
   if (!received_packet)
     return;
-  // å°è¯•æ¢å¤æ•°æ® 
+  // ³¢ÊÔ»Ö¸´Êý¾Ý 
   ProcessReceivedPacket(*received_packet);
 }
 
@@ -97,20 +97,18 @@ FlexfecReceiver::AddReceivedPacket(const RtpPacketReceived& packet) {
       new ForwardErrorCorrection::ReceivedPacket());
   received_packet->seq_num = packet.SequenceNumber();
   received_packet->ssrc = packet.Ssrc();
-  // è¿™æ®µä»£ç ä¸­ && packet.PayloadType() == 113 æ˜¯å› ä¸ºæˆ‘ä»¬mediasoupå¼•å…¥fecæ—¶ä½¿ç”¨åŒä¸€æ¡æµï¼Œè¿™é‡Œä¼šå¼•å…¥ä¸€ä¸ªbugå¯¼è‡´æ— æ³•è§£åŒ…
-  // åªæœ‰fecåŒ…èƒ½è¿›å…¥è¿™é‡Œ
+  // Õâ¶Î´úÂëÖÐ && packet.PayloadType() == 113 ÊÇÒòÎªÎÒÃÇmediasoupÒýÈëfecÊ±Ê¹ÓÃÍ¬Ò»ÌõÁ÷£¬ÕâÀï»áÒýÈëÒ»¸öbugµ¼ÖÂÎÞ·¨½â°ü
+  // Ö»ÓÐfec°üÄÜ½øÈëÕâÀï
   if (received_packet->ssrc == ssrc_ && packet.PayloadType() == 113) {
     // This is a FlexFEC packet.
     if (packet.payload_size() < kMinFlexfecHeaderSize) {
-//      RTC_LOG(LS_WARNING) << "Truncated FlexFEC packet, discarding.";
+      RTC_LOG(LS_WARNING) << "Truncated FlexFEC packet, discarding.";
       return nullptr;
     }
     received_packet->is_fec = true;
     ++packet_counter_.num_fec_packets;
 
     // Insert packet payload into erasure code.
-    // TODO(brandtr): Remove this memcpy when the FEC packet classes
-    // are using COW buffers internally.
     received_packet->pkt = rtc::scoped_refptr<ForwardErrorCorrection::Packet>(
         new ForwardErrorCorrection::Packet());
     auto payload = packet.payload();
@@ -163,7 +161,7 @@ void FlexfecReceiver::ProcessReceivedPacket(
     // Set this flag first, since OnRecoveredPacket may end up here
     // again, with the same packet.
     recovered_packet->returned = true;
-    RTC_CHECK(recovered_packet->pkt);
+    RTC_CHECK_GT(recovered_packet->pkt->length, 0);
     recovered_packet_receiver_->OnRecoveredPacket(
         recovered_packet->pkt->data, recovered_packet->pkt->length);
     // Periodically log the incoming packets.
@@ -171,8 +169,8 @@ void FlexfecReceiver::ProcessReceivedPacket(
     if (now_ms - last_recovered_packet_ms_ > kPacketLogIntervalMs) {
       uint32_t media_ssrc =
           ForwardErrorCorrection::ParseSsrc(recovered_packet->pkt->data);
-//      RTC_LOG(LS_VERBOSE) << "Recovered media packet with SSRC: " << media_ssrc
-//                          << " from FlexFEC stream with SSRC: " << ssrc_ << ".";
+      RTC_LOG(LS_VERBOSE) << "Recovered media packet with SSRC: " << media_ssrc
+                          << " from FlexFEC stream with SSRC: " << ssrc_ << ".";
       last_recovered_packet_ms_ = now_ms;
     }
   }

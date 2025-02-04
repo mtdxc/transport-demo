@@ -109,10 +109,6 @@ class RtpPacket {
   bool HasExtension() const;
   bool HasExtension(ExtensionType type) const;
 
-  template <typename Extension>
-  bool IsExtensionReserved() const;
-  bool IsExtensionReserved(ExtensionType type) const;
-
   template <typename Extension, typename FirstValue, typename... Values>
   bool GetExtension(FirstValue, Values...) const;
 
@@ -124,7 +120,7 @@ class RtpPacket {
   rtc::ArrayView<const uint8_t> GetRawExtension() const;
 
   template <typename Extension, typename... Values>
-  bool SetExtension(Values...);
+  bool SetExtension(const Values&...);
 
   template <typename Extension>
   bool ReserveExtension();
@@ -204,11 +200,6 @@ bool RtpPacket::HasExtension() const {
   return HasExtension(Extension::kId);
 }
 
-template <typename Extension>
-bool RtpPacket::IsExtensionReserved() const {
-  return IsExtensionReserved(Extension::kId);
-}
-
 template <typename Extension, typename FirstValue, typename... Values>
 bool RtpPacket::GetExtension(FirstValue first, Values... values) const {
   auto raw = FindExtension(Extension::kId);
@@ -232,7 +223,7 @@ rtc::ArrayView<const uint8_t> RtpPacket::GetRawExtension() const {
 }
 
 template <typename Extension, typename... Values>
-bool RtpPacket::SetExtension(Values... values) {
+bool RtpPacket::SetExtension(const Values&... values) {
   const size_t value_size = Extension::ValueSize(values...);
   auto buffer = AllocateExtension(Extension::kId, value_size);
   if (buffer.empty())

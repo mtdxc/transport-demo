@@ -19,7 +19,7 @@
 #include "api/scoped_refptr.h"
 #include "modules/rtp_rtcp/source/byte_io.h"
 #include "modules/rtp_rtcp/source/rtp_packet_received.h"
-//#include "rtc_base/logging.h"
+#include "rtc_base/logging.h"
 #include "rtc_base/time_utils.h"
 
 namespace webrtc {
@@ -28,7 +28,7 @@ std::unique_ptr<UlpfecReceiver> UlpfecReceiver::Create(
     uint32_t ssrc,
     RecoveredPacketReceiver* callback,
     rtc::ArrayView<const RtpExtension> extensions) {
-  return absl::make_unique<UlpfecReceiverImpl>(ssrc, callback, extensions);
+  return std::make_unique<UlpfecReceiverImpl>(ssrc, callback, extensions);
 }
 
 UlpfecReceiverImpl::UlpfecReceiverImpl(
@@ -78,29 +78,28 @@ FecPacketCounter UlpfecReceiverImpl::GetPacketCounter() const {
 //    block length:  10 bits Length in bytes of the corresponding data
 //        block excluding header.
 
-int32_t UlpfecReceiverImpl::AddReceivedRedPacket(
-    const RTPHeader& header,
-    const uint8_t* incoming_rtp_packet,
-    size_t packet_length,
+bool UlpfecReceiverImpl::AddReceivedRedPacket(
+    const RtpPacketReceived& rtp_packet,
     uint8_t ulpfec_payload_type) {
-  if (header.ssrc != ssrc_) {
-//    RTC_LOG(LS_WARNING)
-//        << "Received RED packet with different SSRC than expected; dropping.";
-    return -1;
+  int header_length = rtp_packet.headers_size();
+  const uint8_t *incoming_rtp_packet = rtp_packet.data();
+  size_t packet_length = rtp_packet.size();
+  if (rtp_packet.Ssrc() != ssrc_) {
+    RTC_LOG(LS_WARNING) << "Received RED packet with different SSRC than expected; dropping.";
+    return false;
   }
   if (packet_length > IP_PACKET_SIZE) {
-//    RTC_LOG(LS_WARNING) << "Received RED packet with length exceeds maximum IP "
-//                           "packet size; dropping.";
-    return -1;
+    RTC_LOG(LS_WARNING) << "Received RED packet with length exceeds maximum IP packet size; dropping.";
+    return false;
   }
   rtc::CritScope cs(&crit_sect_);
 
   uint8_t red_header_length = 1;
-  size_t payload_data_length = packet_length - header.headerLength;
+  size_t payload_data_length = packet_length - header_length;
 
   if (payload_data_length == 0) {
 //    RTC_LOG(LS_WARNING) << "Corrupt/truncated FEC packet.";
-    return -1;
+    return false;
   }
 
   // Remove RED header of incoming packet and store as a virtual RTP packet.
@@ -109,16 +108,17 @@ int32_t UlpfecReceiverImpl::AddReceivedRedPacket(
   received_packet->pkt = new ForwardErrorCorrection::Packet();
 
   // Get payload type from RED header and sequence number from RTP header.
-  uint8_t payload_type = incoming_rtp_packet[header.headerLength] & 0x7f;
+  uint8_t payload_type = incoming_rtp_packet[header_length] & 0x7f;
   received_packet->is_fec = payload_type == ulpfec_payload_type;
-  received_packet->ssrc = header.ssrc;
-  received_packet->seq_num = header.sequenceNumber;
+  received_packet->is_recovered = rtp_packet.recovered();
+  received_packet->ssrc = rtp_packet.Ssrc();
+  received_packet->seq_num = rtp_packet.SequenceNumber();
 
-  if (incoming_rtp_packet[header.headerLength] & 0x80) {
+  if (incoming_rtp_packet[header_length] & 0x80) {
     // f bit set in RED header, i.e. there are more than one RED header blocks.
     // WebRTC never generates multiple blocks in a RED packet for FEC.
 //    RTC_LOG(LS_WARNING) << "More than 1 block in RED packet is not supported.";
-    return -1;
+    return false;
   }
 
   ++packet_counter_.num_packets;
@@ -131,7 +131,7 @@ int32_t UlpfecReceiverImpl::AddReceivedRedPacket(
 
     // everything behind the RED header
     memcpy(received_packet->pkt->data,
-           incoming_rtp_packet + header.headerLength + red_header_length,
+           incoming_rtp_packet + header_length + red_header_length,
            payload_data_length - red_header_length);
     received_packet->pkt->length = payload_data_length - red_header_length;
     received_packet->ssrc =
@@ -140,26 +140,26 @@ int32_t UlpfecReceiverImpl::AddReceivedRedPacket(
   } else {
     // Copy RTP header.
     memcpy(received_packet->pkt->data, incoming_rtp_packet,
-           header.headerLength);
+           header_length);
 
     // Set payload type.
     received_packet->pkt->data[1] &= 0x80;          // Reset RED payload type.
     received_packet->pkt->data[1] += payload_type;  // Set media payload type.
 
     // Copy payload data.
-    memcpy(received_packet->pkt->data + header.headerLength,
-           incoming_rtp_packet + header.headerLength + red_header_length,
+    memcpy(received_packet->pkt->data + header_length,
+           incoming_rtp_packet + header_length + red_header_length,
            payload_data_length - red_header_length);
     received_packet->pkt->length =
-        header.headerLength + payload_data_length - red_header_length;
+        header_length + payload_data_length - red_header_length;
   }
 
   if (received_packet->pkt->length == 0) {
-    return 0;
+    return false;
   }
 
   received_packets_.push_back(std::move(received_packet));
-  return 0;
+  return true;
 }
 
 // TODO(nisse): Drop always-zero return value.

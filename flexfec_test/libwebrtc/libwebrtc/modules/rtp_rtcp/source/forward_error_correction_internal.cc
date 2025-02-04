@@ -18,8 +18,6 @@
 #include "modules/rtp_rtcp/source/fec_private_tables_random.h"
 #include "rtc_base/checks.h"
 
-#include <iostream>
-
 namespace {
 // Allow for different modes of protection for packets in UEP case.
 enum ProtectionMode {
@@ -294,7 +292,7 @@ void ImportantPacketProtection(int num_fec_for_imp_packets,
 int SetProtectionAllocation(int num_media_packets,
                             int num_fec_packets,
                             int num_imp_packets) {
-  // TODO(marpan): mytest different cases for protection allocation:
+  // TODO(marpan): test different cases for protection allocation:
 
   // Use at most (alloc_par * num_fec_packets) for important packets.
   float alloc_par = 0.5;
@@ -356,7 +354,7 @@ int SetProtectionAllocation(int num_media_packets,
 
 // Protection Mode 2 may be extended for a sort of sliding protection
 // (i.e., vary the number/density of "1s" across columns) across packets.
-// ä½¿ç”¨éžå‡è¡¡ä¿æŠ¤ï¼ˆé»˜è®¤æ˜¯å…³é—­çš„ï¼‰
+// Ê¹ÓÃ·Ç¾ùºâ±£»¤£¨Ä¬ÈÏÊÇ¹Ø±ÕµÄ£©
 void UnequalProtectionMask(int num_media_packets,
                            int num_fec_packets,
                            int num_imp_packets,
@@ -458,13 +456,12 @@ void GeneratePacketMasks(int num_media_packets,
   RTC_DCHECK_LE(num_fec_packets, num_media_packets);
   RTC_DCHECK_LE(num_imp_packets, num_media_packets);
   RTC_DCHECK_GE(num_imp_packets, 0);
-  // æ ¹æ®å¸§å¤§å°è¿›è¡Œmask sizeåˆ†é…ï¼Œåˆ†ä¸¤ç§ï¼š2bitå’Œ6bitã€‚
+  // ¸ù¾ÝÖ¡´óÐ¡½øÐÐmask size·ÖÅä£¬·ÖÁ½ÖÖ£º2bitºÍ6bit¡£
   const int num_mask_bytes = PacketMaskSize(num_media_packets);
 
   // Equal-protection for these cases.
   if (!use_unequal_protection || num_imp_packets == 0) {
-    // é»˜è®¤æ²¡ä½¿ç”¨éžå‡è¡¡ä¿æŠ¤ï¼Œåˆ™æ ¹æ®maskè¡¨ä¿æŠ¤æ•°æ®
-//  if (use_unequal_protection || num_imp_packets == 0) {
+    // Ä¬ÈÏÃ»Ê¹ÓÃ·Ç¾ùºâ±£»¤£¬Ôò¸ù¾Ýmask±í±£»¤Êý¾Ý
     // Retrieve corresponding mask table directly:for equal-protection case.
     // Mask = (k,n-k), with protection factor = (n-k)/k,
     // where k = num_media_packets, n=total#packets, (n-k)=num_fec_packets.
@@ -472,7 +469,7 @@ void GeneratePacketMasks(int num_media_packets,
         mask_table->LookUp(num_media_packets, num_fec_packets);
     memcpy(packet_mask, &mask[0], mask.size());
   } else {  // UEP case
-    // ä½¿ç”¨äº†éžå‡è¡¡ä¿æŠ¤åˆ™éœ€è¦ç€é‡ä¿æŠ¤é‡è¦åŒ…
+    // Ê¹ÓÃÁË·Ç¾ùºâ±£»¤ÔòÐèÒª×ÅÖØ±£»¤ÖØÒª°ü
     UnequalProtectionMask(num_media_packets, num_fec_packets, num_imp_packets,
                           num_mask_bytes, packet_mask, mask_table);
   }  // End of UEP modification
@@ -480,7 +477,7 @@ void GeneratePacketMasks(int num_media_packets,
 
 size_t PacketMaskSize(size_t num_sequence_numbers) {
   RTC_DCHECK_LE(num_sequence_numbers, 8 * kUlpfecPacketMaskSizeLBitSet);
-  // ä¸€æ—¦è¶…è¿‡16
+  // Ò»µ©³¬¹ý16
   if (num_sequence_numbers > 8 * kUlpfecPacketMaskSizeLBitClear) {
     return kUlpfecPacketMaskSizeLBitSet;
   }

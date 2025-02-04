@@ -50,11 +50,7 @@ namespace webrtc {
     key_params.fec_rate = 255;
     key_params.max_fec_frames = 10;
     key_params.fec_mask_type = kFecMaskRandom;
-#if USE_RTC85
     sender_->SetProtectionParameters(delta_params, key_params);
-#else
-    sender_->SetFecParameters(key_params);
-#endif
     receiver_ = new FlexfecReceiver(123123, 123123, this);
   }
 
@@ -116,7 +112,7 @@ namespace webrtc {
       pkt.SetPayloadSize(1000);
       if (i%48 == 0)
         pkt.SetMarker(true);
-      sender_->AddRtpPacketAndGenerateFec(pkt);
+      sender_->AddPacketAndGenerateFec(pkt);
       auto vec_s = sender_->GetFecPackets();
       if (vec_s.size()) {
         for (auto iter = vec_s.begin(); iter != vec_s.end(); iter++) {

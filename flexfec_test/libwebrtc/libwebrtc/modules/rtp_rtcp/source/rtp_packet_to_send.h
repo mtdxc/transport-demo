@@ -26,6 +26,7 @@ namespace webrtc {
 // Class to hold rtp packet with metadata for sender side.
 class RtpPacketToSend : public RtpPacket {
  public:
+  // RtpPacketToSend::Type is deprecated. Use RtpPacketMediaType directly.
   using Type = RtpPacketMediaType;
 
   explicit RtpPacketToSend(const ExtensionManager* extensions);
@@ -74,33 +75,45 @@ class RtpPacketToSend : public RtpPacket {
   void set_packetization_finish_time_ms(int64_t time) {
     SetExtension<VideoTimingExtension>(
         VideoSendTiming::GetDeltaCappedMs(capture_time_ms_, time),
-        VideoSendTiming::kPacketizationFinishDeltaOffset);
+        VideoTimingExtension::kPacketizationFinishDeltaOffset);
   }
 
   void set_pacer_exit_time_ms(int64_t time) {
     SetExtension<VideoTimingExtension>(
         VideoSendTiming::GetDeltaCappedMs(capture_time_ms_, time),
-        VideoSendTiming::kPacerExitDeltaOffset);
+        VideoTimingExtension::kPacerExitDeltaOffset);
   }
 
   void set_network_time_ms(int64_t time) {
     SetExtension<VideoTimingExtension>(
         VideoSendTiming::GetDeltaCappedMs(capture_time_ms_, time),
-        VideoSendTiming::kNetworkTimestampDeltaOffset);
+        VideoTimingExtension::kNetworkTimestampDeltaOffset);
   }
 
   void set_network2_time_ms(int64_t time) {
     SetExtension<VideoTimingExtension>(
         VideoSendTiming::GetDeltaCappedMs(capture_time_ms_, time),
-        VideoSendTiming::kNetwork2TimestampDeltaOffset);
+        VideoTimingExtension::kNetwork2TimestampDeltaOffset);
   }
+
+  // Indicates if packet is the first packet of a video frame.
+  void set_first_packet_of_frame(bool is_first_packet) {
+    is_first_packet_of_frame_ = is_first_packet;
+  }
+  bool is_first_packet_of_frame() const { return is_first_packet_of_frame_; }
+
+  // Indicates if packet contains payload for a video key-frame.
+  void set_is_key_frame(bool is_key_frame) { is_key_frame_ = is_key_frame; }
+  bool is_key_frame() const { return is_key_frame_; }
 
  private:
   int64_t capture_time_ms_ = 0;
-  absl::optional<Type> packet_type_;
+  absl::optional<RtpPacketMediaType> packet_type_;
   bool allow_retransmission_ = false;
   absl::optional<uint16_t> retransmitted_sequence_number_;
   std::vector<uint8_t> application_data_;
+  bool is_first_packet_of_frame_ = false;
+  bool is_key_frame_ = false;
 };
 
 }  // namespace webrtc

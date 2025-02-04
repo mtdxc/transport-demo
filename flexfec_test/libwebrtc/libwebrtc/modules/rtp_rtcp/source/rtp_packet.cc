@@ -15,8 +15,9 @@
 #include <utility>
 
 #include "modules/rtp_rtcp/source/byte_io.h"
-//#include "rtc_base/checks.h"
-//#include "rtc_base/logging.h"
+#include "modules/rtp_rtcp/source/rtp_header_extensions.h"
+#include "rtc_base/checks.h"
+#include "rtc_base/logging.h"
 #include "rtc_base/numerics/safe_conversions.h"
 #include "rtc_base/strings/string_builder.h"
 
@@ -164,15 +165,17 @@ void RtpPacket::CopyAndZeroMutableExtensions(
   for (const ExtensionInfo& extension : extension_entries_) {
     switch (extensions_.GetType(extension.id)) {
       case RTPExtensionType::kRtpExtensionNone: {
-//        RTC_LOG(LS_WARNING) << "Unidentified extension in the packet.";
+        RTC_LOG(LS_WARNING) << "Unidentified extension in the packet.";
         break;
       }
       case RTPExtensionType::kRtpExtensionVideoTiming: {
-        // Nullify 3 last entries: packetization delay and 2 network timestamps.
-        // Each of them is 2 bytes.
-        memset(buffer.data() + extension.offset +
-                   VideoSendTiming::kPacerExitDeltaOffset,
-               0, 6);
+        // Nullify last entries, starting at pacer delay.
+        // These are set by pacer and SFUs
+        if (VideoTimingExtension::kPacerExitDeltaOffset < extension.length) {
+          memset(buffer.data() + extension.offset + VideoSendTiming::kPacerExitDeltaOffset,
+              0,
+              extension.length - VideoTimingExtension::kPacerExitDeltaOffset);
+        }
         break;
       }
       case RTPExtensionType::kRtpExtensionTransportSequenceNumber:
@@ -188,7 +191,6 @@ void RtpPacket::CopyAndZeroMutableExtensions(
       case RTPExtensionType::kRtpExtensionColorSpace:
       case RTPExtensionType::kRtpExtensionFrameMarking:
       case RTPExtensionType::kRtpExtensionGenericFrameDescriptor00:
-      case RTPExtensionType::kRtpExtensionGenericFrameDescriptor01:
       case RTPExtensionType::kRtpExtensionGenericFrameDescriptor02:
       case RTPExtensionType::kRtpExtensionMid:
       case RTPExtensionType::kRtpExtensionNumberOfExtensions:
@@ -196,7 +198,8 @@ void RtpPacket::CopyAndZeroMutableExtensions(
       case RTPExtensionType::kRtpExtensionRepairedRtpStreamId:
       case RTPExtensionType::kRtpExtensionRtpStreamId:
       case RTPExtensionType::kRtpExtensionVideoContentType:
-      case RTPExtensionType::kRtpExtensionVideoRotation: {
+      case RTPExtensionType::kRtpExtensionVideoRotation:
+      case RTPExtensionType::kRtpExtensionInbandComfortNoise: {
         // Non-mutable extension. Don't change it.
         break;
       }
@@ -231,20 +234,20 @@ rtc::ArrayView<uint8_t> RtpPacket::AllocateRawExtension(int id, size_t length) {
     if (extension_entry->length == length)
       return rtc::MakeArrayView(WriteAt(extension_entry->offset), length);
 
-//    RTC_LOG(LS_ERROR) << "Length mismatch for extension id " << id
-//                      << ": expected "
-//                      << static_cast<int>(extension_entry->length)
-//                      << ". received " << length;
+    RTC_LOG(LS_ERROR) << "Length mismatch for extension id " << id
+                      << ": expected "
+                      << static_cast<int>(extension_entry->length)
+                      << ". received " << length;
     return nullptr;
   }
   if (payload_size_ > 0) {
-//    RTC_LOG(LS_ERROR) << "Can't add new extension id " << id
-//                      << " after payload was set.";
+    RTC_LOG(LS_ERROR) << "Can't add new extension id " << id
+                      << " after payload was set.";
     return nullptr;
   }
   if (padding_size_ > 0) {
-//    RTC_LOG(LS_ERROR) << "Can't add new extension id " << id
-//                      << " after padding was set.";
+    RTC_LOG(LS_ERROR) << "Can't add new extension id " << id
+                      << " after padding was set.";
     return nullptr;
   }
 
@@ -270,10 +273,10 @@ rtc::ArrayView<uint8_t> RtpPacket::AllocateRawExtension(int id, size_t length) {
           extensions_size_ + extension_entries_.size() +
           kTwoByteExtensionHeaderLength + length;
       if (extensions_offset + expected_new_extensions_size > capacity()) {
-//        RTC_LOG(LS_ERROR)
-//            << "Extension cannot be registered: Not enough space left in "
-//               "buffer to change to two-byte header extension and add new "
-//               "extension.";
+        RTC_LOG(LS_ERROR)
+            << "Extension cannot be registered: Not enough space left in "
+               "buffer to change to two-byte header extension and add new "
+               "extension.";
         return nullptr;
       }
       // Promote already written data to two-byte header format.
@@ -293,8 +296,8 @@ rtc::ArrayView<uint8_t> RtpPacket::AllocateRawExtension(int id, size_t length) {
   size_t new_extensions_size =
       extensions_size_ + extension_header_size + length;
   if (extensions_offset + new_extensions_size > capacity()) {
-//    RTC_LOG(LS_ERROR)
-//        << "Extension cannot be registered: Not enough space left in buffer.";
+    RTC_LOG(LS_ERROR)
+        << "Extension cannot be registered: Not enough space left in buffer.";
     return nullptr;
   }
 
@@ -394,7 +397,7 @@ uint8_t* RtpPacket::AllocatePayload(size_t size_bytes) {
 uint8_t* RtpPacket::SetPayloadSize(size_t size_bytes) {
   RTC_DCHECK_EQ(padding_size_, 0);
   if (payload_offset_ + size_bytes > capacity()) {
-//    RTC_LOG(LS_WARNING) << "Cannot set payload, not enough space in buffer.";
+    RTC_LOG(LS_WARNING) << "Cannot set payload, not enough space in buffer.";
     return nullptr;
   }
   payload_size_ = size_bytes;
@@ -404,10 +407,10 @@ uint8_t* RtpPacket::SetPayloadSize(size_t size_bytes) {
 
 bool RtpPacket::SetPadding(size_t padding_bytes) {
   if (payload_offset_ + payload_size_ + padding_bytes > capacity()) {
-//    RTC_LOG(LS_WARNING) << "Cannot set padding size " << padding_bytes
-//                        << ", only "
-//                        << (capacity() - payload_offset_ - payload_size_)
-//                        << " bytes left in buffer.";
+    RTC_LOG(LS_WARNING) << "Cannot set padding size " << padding_bytes
+                        << ", only "
+                        << (capacity() - payload_offset_ - payload_size_)
+                        << " bytes left in buffer.";
     return false;
   }
   padding_size_ = rtc::dchecked_cast<uint8_t>(padding_bytes);
@@ -466,7 +469,7 @@ bool RtpPacket::ParseBuffer(const uint8_t* buffer, size_t size) {
   if (has_padding) {
     padding_size_ = buffer[size - 1];
     if (padding_size_ == 0) {
-//      RTC_LOG(LS_WARNING) << "Padding was set, but padding size is zero";
+      RTC_LOG(LS_WARNING) << "Padding was set, but padding size is zero";
       return false;
     }
   } else {
@@ -499,7 +502,7 @@ bool RtpPacket::ParseBuffer(const uint8_t* buffer, size_t size) {
     }
     if (profile != kOneByteExtensionProfileId &&
         profile != kTwoByteExtensionProfileId) {
-//      RTC_LOG(LS_WARNING) << "Unsupported rtp extension " << profile;
+      RTC_LOG(LS_WARNING) << "Unsupported rtp extension " << profile;
     } else {
       size_t extension_header_length = profile == kOneByteExtensionProfileId
                                            ? kOneByteExtensionHeaderLength
@@ -528,20 +531,20 @@ bool RtpPacket::ParseBuffer(const uint8_t* buffer, size_t size) {
 
         if (extensions_size_ + extension_header_length + length >
             extensions_capacity) {
-//          RTC_LOG(LS_WARNING) << "Oversized rtp header extension.";
+          RTC_LOG(LS_WARNING) << "Oversized rtp header extension.";
           break;
         }
 
         ExtensionInfo& extension_info = FindOrCreateExtensionInfo(id);
         if (extension_info.length != 0) {
-//          RTC_LOG(LS_VERBOSE)
-//              << "Duplicate rtp header extension id " << id << ". Overwriting.";
+          RTC_LOG(LS_VERBOSE)
+              << "Duplicate rtp header extension id " << id << ". Overwriting.";
         }
 
         size_t offset =
             extension_offset + extensions_size_ + extension_header_length;
         if (!rtc::IsValueInRangeForNumericType<uint16_t>(offset)) {
-//          RTC_DLOG(LS_WARNING) << "Oversized rtp header extension.";
+          RTC_DLOG(LS_WARNING) << "Oversized rtp header extension.";
           break;
         }
         extension_info.offset = static_cast<uint16_t>(offset);
@@ -615,11 +618,6 @@ rtc::ArrayView<uint8_t> RtpPacket::AllocateExtension(ExtensionType type,
 }
 
 bool RtpPacket::HasExtension(ExtensionType type) const {
-  // TODO(webrtc:7990): Add support for empty extensions (length==0).
-  return !FindExtension(type).empty();
-}
-
-bool RtpPacket::IsExtensionReserved(ExtensionType type) const {
   uint8_t id = extensions_.GetId(type);
   if (id == ExtensionManager::kInvalidId) {
     // Extension not registered.
@@ -632,8 +630,8 @@ bool RtpPacket::RemoveExtension(ExtensionType type) {
   uint8_t id_to_remove = extensions_.GetId(type);
   if (id_to_remove == ExtensionManager::kInvalidId) {
     // Extension not registered.
-//    RTC_LOG(LS_ERROR) << "Extension not registered, type=" << type
-//                      << ", packet=" << ToString();
+    RTC_LOG(LS_ERROR) << "Extension not registered, type=" << type
+                      << ", packet=" << ToString();
     return false;
   }
 
@@ -655,9 +653,9 @@ bool RtpPacket::RemoveExtension(ExtensionType type) {
     } else {
       auto extension_data = new_packet.AllocateRawExtension(ext.id, ext.length);
       if (extension_data.size() != ext.length) {
-//        RTC_LOG(LS_ERROR) << "Failed to allocate extension id=" << ext.id
-//                          << ", length=" << ext.length
-//                          << ", packet=" << ToString();
+        RTC_LOG(LS_ERROR) << "Failed to allocate extension id=" << ext.id
+                          << ", length=" << ext.length
+                          << ", packet=" << ToString();
         return false;
       }
 
@@ -667,8 +665,8 @@ bool RtpPacket::RemoveExtension(ExtensionType type) {
   }
 
   if (!found_extension) {
-//    RTC_LOG(LS_WARNING) << "Extension not present in RTP packet, type=" << type
-//                        << ", packet=" << ToString();
+    RTC_LOG(LS_WARNING) << "Extension not present in RTP packet, type=" << type
+                        << ", packet=" << ToString();
     return false;
   }
 

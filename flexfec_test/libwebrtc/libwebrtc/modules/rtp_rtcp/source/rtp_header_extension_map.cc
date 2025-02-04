@@ -14,8 +14,8 @@
 #include "modules/rtp_rtcp/source/rtp_generic_frame_descriptor_extension.h"
 #include "modules/rtp_rtcp/source/rtp_header_extensions.h"
 #include "rtc_base/arraysize.h"
-//#include "rtc_base/checks.h"
-//#include "rtc_base/logging.h"
+#include "rtc_base/checks.h"
+#include "rtc_base/logging.h"
 
 namespace webrtc {
 namespace {
@@ -46,9 +46,9 @@ constexpr ExtensionInfo kExtensions[] = {
     CreateExtensionInfo<RepairedRtpStreamId>(),
     CreateExtensionInfo<RtpMid>(),
     CreateExtensionInfo<RtpGenericFrameDescriptorExtension00>(),
-    CreateExtensionInfo<RtpGenericFrameDescriptorExtension01>(),
     CreateExtensionInfo<RtpDependencyDescriptorExtension>(),
     CreateExtensionInfo<ColorSpaceExtension>(),
+    CreateExtensionInfo<InbandComfortNoiseExtension>(),
 };
 
 // Because of kRtpExtensionNone, NumberOfExtension is 1 bigger than the actual
@@ -85,12 +85,12 @@ bool RtpHeaderExtensionMap::RegisterByType(int id, RTPExtensionType type) {
   return false;
 }
 
-bool RtpHeaderExtensionMap::RegisterByUri(int id, const std::string& uri) {
+bool RtpHeaderExtensionMap::RegisterByUri(int id, absl::string_view uri) {
   for (const ExtensionInfo& extension : kExtensions)
     if (uri == extension.uri)
       return Register(id, extension.type, extension.uri);
-//  RTC_LOG(LS_WARNING) << "Unknown extension uri:'" << uri << "', id: " << id
-//                      << '.';
+  RTC_LOG(LS_WARNING) << "Unknown extension uri:'" << uri << "', id: " << id
+                      << '.';
   return false;
 }
 
@@ -113,6 +113,15 @@ int32_t RtpHeaderExtensionMap::Deregister(RTPExtensionType type) {
   return 0;
 }
 
+void RtpHeaderExtensionMap::Deregister(absl::string_view uri) {
+  for (const ExtensionInfo& extension : kExtensions) {
+    if (extension.uri == uri) {
+      ids_[extension.type] = kInvalidId;
+      break;
+    }
+  }
+}
+
 bool RtpHeaderExtensionMap::Register(int id,
                                      RTPExtensionType type,
                                      const char* uri) {
@@ -120,24 +129,24 @@ bool RtpHeaderExtensionMap::Register(int id,
   RTC_DCHECK_LT(type, kRtpExtensionNumberOfExtensions);
 
   if (id < RtpExtension::kMinId || id > RtpExtension::kMaxId) {
-//    RTC_LOG(LS_WARNING) << "Failed to register extension uri:'" << uri
-//                        << "' with invalid id:" << id << ".";
+    RTC_LOG(LS_WARNING) << "Failed to register extension uri:'" << uri
+                        << "' with invalid id:" << id << ".";
     return false;
   }
 
   RTPExtensionType registered_type = GetType(id);
   if (registered_type == type) {  // Same type/id pair already registered.
-//    RTC_LOG(LS_VERBOSE) << "Reregistering extension uri:'" << uri
-//                        << "', id:" << id;
+    RTC_LOG(LS_VERBOSE) << "Reregistering extension uri:'" << uri
+                        << "', id:" << id;
     return true;
   }
 
   if (registered_type !=
       kInvalidType) {  // |id| used by another extension type.
-//    RTC_LOG(LS_WARNING) << "Failed to register extension uri:'" << uri
-//                        << "', id:" << id
-//                        << ". Id already in use by extension type "
-//                        << static_cast<int>(registered_type);
+    RTC_LOG(LS_WARNING) << "Failed to register extension uri:'" << uri
+                        << "', id:" << id
+                        << ". Id already in use by extension type "
+                        << static_cast<int>(registered_type);
     return false;
   }
   RTC_DCHECK(!IsRegistered(type));
