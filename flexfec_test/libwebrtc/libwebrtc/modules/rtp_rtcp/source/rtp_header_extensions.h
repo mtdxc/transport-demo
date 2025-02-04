@@ -96,8 +96,7 @@ class TransportSequenceNumber {
   static constexpr RTPExtensionType kId = kRtpExtensionTransportSequenceNumber;
   static constexpr uint8_t kValueSizeBytes = 2;
   static constexpr const char kUri[] =
-      "http://www.ietf.org/id/"
-      "draft-holmer-rmcat-transport-wide-cc-extensions-01";
+      "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01";
   static bool Parse(rtc::ArrayView<const uint8_t> data,
                     uint16_t* transport_sequence_number);
   static size_t ValueSize(uint16_t /*transport_sequence_number*/) {

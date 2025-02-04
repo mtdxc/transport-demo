@@ -53,7 +53,6 @@ add_executable(${PROJECT_NAME}
         libwebrtc/libwebrtc/api/video/color_space.cc
         libwebrtc/libwebrtc/api/video/hdr_metadata.cc
         libwebrtc/libwebrtc/api/rtp_parameters.cc
-        libwebrtc/libwebrtc/api/transport/network_types.cc
         libwebrtc/libwebrtc/api/video/video_content_type.cc
         )
 
