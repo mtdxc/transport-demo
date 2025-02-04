@@ -23,15 +23,20 @@
 #include "api/video/video_rotation.h"
 #include "api/video/video_timing.h"
 #include "common_types.h"  // NOLINT(build/include)
+#ifdef ENABLE_VIDEO_CODEC
 #include "modules/video_coding/codecs/h264/include/h264_globals.h"
 #include "modules/video_coding/codecs/vp8/include/vp8_globals.h"
 #include "modules/video_coding/codecs/vp9/include/vp9_globals.h"
-
+#endif
 namespace webrtc {
+#ifdef ENABLE_VIDEO_CODEC
 using RTPVideoTypeHeader = absl::variant<absl::monostate,
                                          RTPVideoHeaderVP8,
                                          RTPVideoHeaderVP9,
                                          RTPVideoHeaderH264>;
+#else
+using RTPVideoTypeHeader = absl::variant<absl::monostate>;
+#endif
 
 struct RTPVideoHeader {
   struct GenericDescriptorInfo {
