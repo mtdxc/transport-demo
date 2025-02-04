@@ -9,7 +9,6 @@
 
 #include "test.h"
 #include "modules/rtp_rtcp/source/rtp_packet.h"
-#include "modules/rtp_rtcp/source/rtp_packet_to_send.h"
 
 #include <iostream>
 #include <sstream>
@@ -40,7 +39,7 @@ namespace webrtc {
     std::string mid("mytest");
 
     Clock *clock = Clock::GetRealTimeClock();
-    sender_ = new webrtc85::FlexfecSender(113, 123123, 123123, mid, vec, size, nullptr, clock);
+    sender_ = new FlexfecSender(113, 123123, 123123, mid, vec, size, nullptr, clock);
 
     FecProtectionParams delta_params;
     delta_params.fec_rate = 255;
@@ -51,9 +50,12 @@ namespace webrtc {
     key_params.fec_rate = 255;
     key_params.max_fec_frames = 10;
     key_params.fec_mask_type = kFecMaskRandom;
+#if USE_RTC85
     sender_->SetProtectionParameters(delta_params, key_params);
-
-    receiver_ = new webrtc::FlexfecReceiver(123123, 123123, this);
+#else
+    sender_->SetFecParameters(key_params);
+#endif
+    receiver_ = new FlexfecReceiver(123123, 123123, this);
   }
 
   test::~test() {
@@ -82,7 +84,7 @@ namespace webrtc {
 
 
   void test::OnRecoveredPacket(const uint8_t *packet, size_t length) {
-    webrtc::RtpPacketReceived parsed_packet(nullptr);
+    RtpPacketReceived parsed_packet(nullptr);
     if (!parsed_packet.Parse(packet, length)) {
       std::cout << "parse err" << std::endl;
       return;
@@ -105,7 +107,7 @@ namespace webrtc {
       char s[1000];
       fgets(s, 1000, origin);
 
-      webrtc85::RtpPacketToSend pkt(nullptr, 1000);
+      RtpPacketToSend pkt(nullptr, 1000);
       // pkt.Parse(kPacketWithH264, sizeof(kPacketWithH264));
       pkt.SetSequenceNumber(i);
       pkt.SetPayloadType(101);
@@ -114,13 +116,15 @@ namespace webrtc {
       pkt.SetPayloadSize(1000);
       if (i%48 == 0)
         pkt.SetMarker(true);
-
+#if USE_RTC85
       sender_->AddPacketAndGenerateFec(pkt);
-
+#else
+      sender_->AddRtpPacketAndGenerateFec(pkt);
+#endif
       auto vec_s = sender_->GetFecPackets();
       if (vec_s.size()) {
         for (auto iter = vec_s.begin(); iter != vec_s.end(); iter++) {
-          webrtc::RtpPacketReceived parsed_packet(nullptr);
+          RtpPacketReceived parsed_packet(nullptr);
           parsed_packet.Parse((*iter)->data(), (*iter)->size());
           parsed_packet.SetPayloadType(113);
           receiver_->OnRtpPacket(parsed_packet);
@@ -131,7 +135,7 @@ namespace webrtc {
         if (i%2 == 0) {
           continue;
         }
-        webrtc::RtpPacketReceived parsed_packet(nullptr);
+        RtpPacketReceived parsed_packet(nullptr);
         parsed_packet.Parse(pkt.data(), pkt.size());
         receiver_->OnRtpPacket(parsed_packet);
         record_map[parsed_packet.SequenceNumber()] = parsed_packet;

@@ -6,13 +6,27 @@
  * @file        : mytest.h
  * @description : TODO
  *******************************************************/
-#include "modules/rtp_rtcp/include/flexfec_receiver.h"
-//#include "modules/rtp_rtcp/include/flexfec_receiver_85.h"
-#include "modules/rtp_rtcp/source/rtp_packet_received.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
-//#include "modules/rtp_rtcp/include/flexfec_sender.h"
+#define USE_RTC85 0
+#if USE_RTC85
+#include "modules/rtp_rtcp/include/flexfec_receiver_85.h"
 #include "modules/rtp_rtcp/include/flexfec_sender_85.h"
-
+#include "modules/rtp_rtcp/source/rtp_packet_received_85.h"
+#include "modules/rtp_rtcp/source/rtp_packet_to_send_85.h"
+using webrtc85::FlexfecReceiver;
+using webrtc85::FlexfecSender;
+using webrtc85::RtpPacketToSend;
+using webrtc85::RtpPacketReceived;
+#else
+#include "modules/rtp_rtcp/include/flexfec_receiver.h"
+#include "modules/rtp_rtcp/include/flexfec_sender.h"
+#include "modules/rtp_rtcp/source/rtp_packet_received.h"
+#include "modules/rtp_rtcp/source/rtp_packet_to_send.h"
+using webrtc::FlexfecReceiver;
+using webrtc::FlexfecSender;
+using webrtc::RtpPacketToSend;
+using webrtc::RtpPacketReceived;
+#endif
 #include "rtp_packet_test.h"
 
 #include <fstream>
@@ -32,12 +46,11 @@ namespace webrtc {
     void WorkTest();
 
   private:
-//    webrtc::FlexfecReceiver * receiver_;
-    webrtc::FlexfecReceiver * receiver_;
-    webrtc85::FlexfecSender * sender_;
+    FlexfecReceiver * receiver_;
+    FlexfecSender * sender_;
     std::ofstream outfile;
 
-    std::map<uint16_t, webrtc::RtpPacketReceived> record_map;
+    std::map<uint16_t, RtpPacketReceived> record_map;
   };
 }
 
